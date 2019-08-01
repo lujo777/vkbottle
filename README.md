@@ -1,5 +1,5 @@
 # vkbottle
-New VK bot-engine repo with decorators!
+New VK bot-engine repo with **decorators** like in famous framework flask!
 
 ## Usage
 Lets create a simple bot engine
