@@ -1,2 +1,2 @@
 # vkbottle
- New bot-creating repo with options control like in the flask
+New VK bot-engine repo with decorators!
