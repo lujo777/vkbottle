@@ -2,6 +2,7 @@ import vk_api
 import requests
 import json
 from random import randint
+from datetime import datetime
 
 
 def _keyboard(self, pattern, one_time=False):
@@ -33,11 +34,15 @@ def _keyboard(self, pattern, one_time=False):
 
     return keyboard
 
-# The main
 
+# The main
 class Bot:
     _processor = {}
     _undefined_func = (lambda *args: print('Add to your on-message file an on-message-undefined decorator'))
+
+    def log_debug(self, text):
+        if self.debug is True:
+            print("[\x1b[34mVK Bottle\x1b[0m] " + text.replace('#', str(datetime.now().time())) + "\x1b[0m")
 
     def __init__(self, token, group_id, rps_delay=0, debug=False):
         self.session = vk_api.VkApi(token=token,)
@@ -45,12 +50,23 @@ class Bot:
         self.session.RPS_DELAY = rps_delay
         self.group_id = group_id
         self.debug = debug
+        self.log_debug('Bot was authorised successfully')
 
     def process_message(self, text: str, obj):
         answer = MessageAnswer(obj, self.session, self.group_id)
+        self.log_debug('\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(obj['peer_id'], obj['text']))
         if text in self._processor:
             self._processor[text](answer)
+            self.log_debug(
+                'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                    self._processor[text].__name__, obj['peer_id']
+                ))
         else:
+            self.log_debug(
+                'New message compile decorator was not found. '\
+                'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(
+                    obj['peer_id']
+                ))
             self._undefined_func(answer)
 
     def on_message(self, text):
@@ -65,22 +81,24 @@ class Bot:
             return func
         return decorator
 
-    def run(self):
+    def run(self, wait=15):
+        self.log_debug('Found {} message decorators'.format(len(self._processor.keys())))
         longpoll = self.session.method(
             'groups.getLongPollServer',
             {"group_id": self.group_id}
             )
         ts = longpoll['ts']
+        self.log_debug('Started listening longpoll...')
         while True:
             try:
-                url = f"{longpoll['server']}?act=a_check&key={longpoll['key']}&ts={ts}&wait=15"
+                url = f"{longpoll['server']}?act=a_check&key={longpoll['key']}&ts={ts}&wait={wait}"
                 event = requests.post(url).json()
                 if event['updates']:
                     if event['updates'][0]['type'] == 'message_new':
                         obj = event['updates'][0]['object']
                         self.process_message(obj['text'], obj)
             except requests.ConnectTimeout:
-                print('Request Connect Timeout! Reloading longpoll..')
+                self.log_debug('Request Connect Timeout! Reloading longpoll..')
             except Exception as e:
                 print(e)
             try:

@@ -5,19 +5,14 @@ from enum import Enum
 
 class KeyboardColor(Enum):
     PRIMARY = 'primary'
-
     DEFAULT = 'default'
-
     NEGATIVE = 'negative'
-
     POSITIVE = 'positive'
 
 
 class KeyboardButton(Enum):
     TEXT = "text"
-
     VKPAY = "vkpay"
-
     VKAPPS = "open_app"
 
 
