@@ -1,6 +1,3 @@
-from vkbottle.vkbottle.utils import Utils
-
-
 class Events:
     _processor_message = {}
     _processor_message_chat = {}

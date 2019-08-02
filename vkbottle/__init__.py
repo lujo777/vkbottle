@@ -1,6 +1,5 @@
 import vk_api
 import requests
-import json
 from random import randint
 from .utils import Utils
 from .events import Events
