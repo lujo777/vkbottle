@@ -33,4 +33,11 @@ def undefined(answer):
     print('I cannot understand somebody')
 # bot.run()
 ```
+How to use **answer**?
+There're a lot of supported methods:
+
+Method | Description
+------------ | -------------
+answer(text, attachment=None, keyboard=None, sticker=None) | Needed for fast answer to creator of event
+answer.send(peer_id, text, attachment=None, keyboard=None, sticker=None) | Needed for answer to specific user by peer_id, for example, report to admin
 
