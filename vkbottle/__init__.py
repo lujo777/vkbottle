@@ -4,6 +4,7 @@ import json
 from random import randint
 from .utils import Utils
 from .events import Events
+from .jsontype import json_type_utils, dumps as json_dumps
 
 
 # The main
@@ -19,6 +20,7 @@ class Bot(Events):
 
     def run(self, wait=15):
         self.utils('Found {} message decorators'.format(len(self._processor_message.keys())))
+        self.utils(json_type_utils())
         longpoll = self.session.method(
             'groups.getLongPollServer',
             {"group_id": self.group_id}
@@ -104,7 +106,9 @@ class AnswerObject:
         )
         request = {k: v for k, v in request.items() if v is not None}
         if 'keyboard' in request:
-            request['keyboard'] = _keyboard(self, keyboard)
+            request['keyboard'] = _keyboard(keyboard)
+
+        print(request['keyboard'])
         return self.method('messages', 'send', request)
 
     def send(self, peer_id, text, attachment=None, keyboard=None, sticker=None):
@@ -118,7 +122,7 @@ class AnswerObject:
         )
         request = {k: v for k, v in request.items() if v is not None}
         if 'keyboard' in request:
-            request['keyboard'] = _keyboard(self, keyboard)
+            request['keyboard'] = _keyboard(keyboard)
         return self.method('messages', 'send', request)
 
 
@@ -129,6 +133,7 @@ def _keyboard(pattern, one_time=False):
     :return: VK Api Keyboard JSON
     """
     rows = pattern
+    print(rows)
     buttons = list()
     for row in rows:
         row_buttons = list()
@@ -137,14 +142,14 @@ def _keyboard(pattern, one_time=False):
                 action=dict(
                     type="text" if 'type' not in button else button['type'],
                     label=button['text'],
-                    payload=json.dumps("" if 'payload' not in button else button['payload'])
+                    payload=json_dumps("" if 'payload' not in button else button['payload'])
                 ),
                 color="default" if 'color' not in button else button['color']
             )
             )
         buttons.append(row_buttons)
 
-    keyboard = str(json.dumps(
+    keyboard = str(json_dumps(
         dict(
             one_time=one_time,
             buttons=buttons
