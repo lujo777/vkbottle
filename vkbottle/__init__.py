@@ -53,7 +53,7 @@ class Bot:
         self.log_debug('Bot was authorised successfully')
 
     def process_message(self, text: str, obj):
-        answer = MessageAnswer(obj, self.session, self.group_id)
+        answer = AnswerObject(obj, self.session, self.group_id)
         self.log_debug('\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(obj['peer_id'], obj['text']))
         if text in self._processor:
             self._processor[text](answer)
@@ -115,7 +115,7 @@ class Bot:
         return response
 
 
-class MessageAnswer:
+class AnswerObject:
     def __init__(self, obj, session: vk_api.VkApi, group_id):
         self.obj = obj
         self.peer_id = obj["peer_id"]
