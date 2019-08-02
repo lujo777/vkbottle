@@ -3,7 +3,7 @@ import requests
 import json
 from random import randint
 from datetime import datetime
-
+from .utils import Utils
 
 def _keyboard(self, pattern, one_time=False):
     rows = pattern
@@ -50,19 +50,20 @@ class Bot:
         self.session.RPS_DELAY = rps_delay
         self.group_id = group_id
         self.debug = debug
-        self.log_debug('Bot was authorised successfully')
+        self.utils = Utils(debug)
+        self.utils('Bot was authorised successfully')
 
     def process_message(self, text: str, obj):
         answer = AnswerObject(obj, self.session, self.group_id)
         self.log_debug('\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(obj['peer_id'], obj['text']))
         if text in self._processor:
             self._processor[text](answer)
-            self.log_debug(
+            self.utils(
                 'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
                     self._processor[text].__name__, obj['peer_id']
                 ))
         else:
-            self.log_debug(
+            self.utils(
                 'New message compile decorator was not found. '\
                 'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(
                     obj['peer_id']
@@ -155,4 +156,3 @@ class AnswerObject:
         if 'keyboard' in request:
             request['keyboard'] = _keyboard(self, keyboard)
         return self.method('messages', 'send', request)
-
