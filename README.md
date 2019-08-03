@@ -39,5 +39,20 @@ There're a lot of supported methods:
 Method | Description
 ------------ | -------------
 answer(text, attachment=None, keyboard=None, sticker=None) | Needed for fast answer to creator of event
-answer.send(peer_id, text, attachment=None, keyboard=None, sticker=None) | Needed for answer to specific user by peer_id, for example, report to admin
 
+Answer is messages.send method without peer_id, it completes automatically
+
+## Bot Api
+
+You can use VK Bot API to make all types and groups of requests. To do it you can use a simple method:
+
+```python
+api = bot.api
+api.messages.send(peer_id=1, message='Hi, my friend!')
+```
+
+All available methods you can find in [VK Methods Documentation](https://vk.com/dev/methods)
+***
+But now available methods are:
+* messages.send
+* messages.delete
