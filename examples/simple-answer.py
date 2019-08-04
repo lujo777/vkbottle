@@ -6,13 +6,15 @@ admin_id = 1  # VK Group admin ID
 
 @bot.on_message('Hi')
 def hi(answer: AnswerObject):  # Type container is needed for syntax highlighting
-    answer('Hi my friend!')
+    a = answer('Hi my friend!')
+    answer('Oh sorry! You are not my friend!')
+    bot.api.messages.delete(a, delete_for_all=True)
 
 
 @bot.on_message('goodbye')
 def goodbye(answer: AnswerObject):
     answer('Ooh.. Bye-bye :)')
-    answer.send(admin_id, 'User said goodbye to bot :(')
+    bot.api.messages.send(admin_id, 'User said goodbye to bot :(')
 
 
 @bot.on_message_undefined()
