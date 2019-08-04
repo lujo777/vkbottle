@@ -154,53 +154,173 @@ class VkMessages:
         request = {k: v for k, v in request.items() if v is not None}
         return self.method('messages', 'getHistory', request)
 
-    def getHistoryAttachments(self):
-        pass
+    def getHistoryAttachments(self, peer_id, media_type=None, start_from=None, count=None, photo_sizes=None,
+                              fields=None, preserve_order=None, max_forwards_level=None):
+        request = dict(
+            peer_id=peer_id,
+            media_type=media_type,
+            start_from=start_from,
+            count=count,
+            photo_sizes=photo_sizes,
+            fields=fields,
+            preserve_order=preserve_order,
+            max_forwards_level=max_forwards_level
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'getHistoryAttachments', request)
 
-    def getImportantMessages(self):
-        pass
+    def getImportantMessages(self, count=None, offset=None, start_message_id=None, preview_length=None,
+                             fields=None, extended=None):
+        request = dict(
+            count=count,
+            offset=offset,
+            start_message_id=start_message_id,
+            preview_length=preview_length,
+            fields=fields,
+            extended=extended
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'getImportantMessages', request)
 
-    def getInviteLink(self):
-        pass
+    def getInviteLink(self, peer_id, reset=None):
+        request = dict(
+            peer_id=peer_id,
+            reset=reset
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'getInviteLink', request)
 
-    def getLongPollHistory(self):
-        pass
+    def getLongPollHistory(self, ts=None, pts=None, preview_length=None, onlines=None, fields=None,
+                           events_limit=None, msgs_limit=None, max_msg_id=None, lp_version=None,
+                           last_n=None, credentials=None):
+        request = dict(
+            ts=ts,
+            pts=pts,
+            preview_length=preview_length,
+            onlines=onlines,
+            fields=fields,
+            events_limit=events_limit,
+            msgs_limit=msgs_limit,
+            max_msg_id=max_msg_id,
+            lp_version=lp_version,
+            last_n=last_n,
+            credentials=credentials
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'getLongPollHistory', request)
 
-    def getLongPollServer(self):
-        pass
+    def getLongPollServer(self, need_pts=None, lp_version=None):
+        request = dict(
+            need_pts=need_pts,
+            lp_version=lp_version
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'getLongPollServer', request)
 
-    def isMessagesFromGroupAllowed(self):
-        pass
+    def isMessagesFromGroupAllowed(self, group_id, user_id):
+        request = dict(
+            group_id=group_id,
+            user_id=user_id
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'isMessagesFromGroupAllowed', request)
 
-    def markAsAnsweredConversations(self):
-        pass
+    def markAsAnsweredConversations(self, peer_id, answered=None):
+        request = dict(
+            peer_id=peer_id,
+            answered=answered
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'markAsAnsweredConversations', request)
 
-    def markAsImportantConversation(self):
-        pass
+    def markAsImportantConversation(self, peer_id, important=None):
+        request = dict(
+            peer_id=peer_id,
+            important=important
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'markAsImportantConversation', request)
 
-    def markAsRead(self):
-        pass
+    def markAsRead(self, message_ids, peer_id, start_message_id=None):
+        request = dict(
+            message_ids=message_ids,
+            peer_id=peer_id,
+            start_message_id=start_message_id
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'markAsRead', request)
 
-    def pin(self):
-        pass
+    def pin(self, peer_id, message_id):
+        request = dict(
+            peer_id=peer_id,
+            message_id=message_id
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'pin', request)
 
-    def removeChatUser(self):
-        pass
+    def removeChatUser(self, chat_id, user_id=None, member_id=None):
+        request = dict(
+            chat_id=chat_id,
+            user_id=user_id,
+            member_id=member_id
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'removeChatUser', request)
 
-    def restore(self):
-        pass
+    def restore(self, message_id):
+        request = dict(
+            message_id=message_id
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'restore', request)
 
-    def search(self):
-        pass
+    def search(self, q=None, peer_id=None, date=None, preview_length=None, offset=None, count=None, extended=None,
+               fields=None):
+        request = dict(
+            q=q,
+            peer_id=peer_id,
+            date=date,
+            preview_length=preview_length,
+            offset=offset,
+            count=count,
+            extended=extended,
+            fields=fields
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'search', request)
 
-    def searchConversations(self):
-        pass
+    def searchConversations(self, q=None, count=None, extended=None, fields=None):
+        request = dict(
+            q=q,
+            count=count,
+            extended=extended,
+            fields=fields
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'searchConversations', request)
 
-    def setActivity(self):
-        pass
+    def setActivity(self, user_id=None, type=None, peer_id=None):
+        request = dict(
+            user_id=user_id,
+            type=type,
+            peer_id=peer_id
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'setActivity', request)
 
-    def unpin(self):
-        pass
+    def setChatPhoto(self, file):
+        request = dict(
+            file=file
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'setChatPhoto', request)
+
+    def unpin(self, peer_id):
+        request = dict(
+            peer_id=peer_id
+        )
+        request = {k: v for k, v in request.items() if v is not None}
+        return self.method('messages', 'unpin', request)
 
 
 class Method:
