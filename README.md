@@ -13,7 +13,7 @@ Name | Value
 token | Your VK Group token for longpoll starting (**str**)
 group_id | Your VK Group ID (**int** )
 debug | Should vkbottle show debug messages? Default to False (**bool**)
-rps_delay | Set the server-response delay. Default to 0 (**int**)
+async | Should vkbottle (Bot) use asyncio to reach more faster results. Default to True (**bool**)
 
 Now we should import our event-files like this: `import events` with `bot.run()` in it or make it in one single file
 
