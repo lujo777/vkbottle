@@ -68,7 +68,7 @@ Parser example looks like this:
 **{parser:arg}**
 
 For example:  
-```'Hello, my dear {user.first_name}!```
+```'Hello, my dear {user:first_name}!```
 
 #### User Method Parser
 
@@ -84,7 +84,8 @@ Parser Example | Description
 -------------- | -----------
 {group:name} | Make it to name of the group where bot is
 {group:description} | Make it to description of the group where bot is
-... | 
+... | ...
+
 More info in [VK Object/Group Documentation](https://vk.com/dev/objects/group)
 
 #### Self Parser
