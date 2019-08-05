@@ -45,3 +45,24 @@ class Events:
                 self.events[event]['equal'][yourself] = func
             return func
         return decorator
+
+    def on_message_reply(self):
+        def decorator(func):
+            event = 'message_reply'
+            self.events[event] = {'rule': '=', 'equal': {'=': func}}
+            return func
+        return decorator
+
+    def on_message_allow(self):
+        def decorator(func):
+            event = 'message_allow'
+            self.events[event] = {'rule': '=', 'equal': {'=': func}}
+            return func
+        return decorator
+
+    def on_message_deny(self):
+        def decorator(func):
+            event = 'message_deny'
+            self.events[event] = {'rule': '=', 'equal': {'=': func}}
+            return func
+        return decorator

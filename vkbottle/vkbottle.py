@@ -79,16 +79,21 @@ class RunBot:
             ))
         event_type = event['updates'][0]['type']
         rule = self.bot.events[event_type]['rule']
-        event_compile = True \
-            if rule in event['updates'][0]['object'] \
-               and event['updates'][0]['object'][rule] in self.bot.events[event_type]['equal'] \
-            else False
-        if event_compile:
+        if rule != '=':
+            event_compile = True \
+                if rule in event['updates'][0]['object'] \
+                and event['updates'][0]['object'][rule] in self.bot.events[event_type]['equal'] \
+                else False
+            if event_compile:
+                answer = AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
+                self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
+                self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
+            else:
+                self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
+        else:
             answer = AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
             self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
-            self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
-        else:
-            self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
+            self.bot.events[event_type]['equal']['='](answer)
 
 
 # Async Bot
@@ -174,16 +179,21 @@ class RunBotAsync:
             ))
         event_type = event['updates'][0]['type']
         rule = self.bot.events[event_type]['rule']
-        event_compile = True \
-            if rule in event['updates'][0]['object'] \
-            and event['updates'][0]['object'][rule] in self.bot.events[event_type]['equal'] \
-            else False
-        if event_compile:
+        if rule != '=':
+            event_compile = True \
+                if rule in event['updates'][0]['object'] \
+                   and event['updates'][0]['object'][rule] in self.bot.events[event_type]['equal'] \
+                else False
+            if event_compile:
+                answer = AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
+                self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
+                self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
+            else:
+                self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
+        else:
             answer = AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
             self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
-            self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
-        else:
-            self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
+            self.bot.events[event_type]['equal']['='](answer)
 
 
 class AnswerObject:
