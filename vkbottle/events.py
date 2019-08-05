@@ -29,12 +29,19 @@ class Events:
 
     def on_group_join(self, join_type='join'):
         def decorator(func):
-            self.events['group_join'] = {'call': func, 'rule': [['join_type', join_type]]}
+            if 'group_join' not in self.events:
+                self.events['group_join'] = {'rule': 'join_type', 'equal': {join_type: func}}
+            else:
+                self.events['group_join']['equal'][join_type] = func
             return func
         return decorator
 
     def on_group_leave(self, yourself=True):
         def decorator(func):
-            self.events['group_leave'] = {'call': func, 'rule': [['self', int(yourself)]]}
+            event = 'group_leave'
+            if event not in self.events:
+                self.events[event] = {'rule': 'self', 'equal': {yourself: func}}
+            else:
+                self.events[event]['equal'][yourself] = func
             return func
         return decorator

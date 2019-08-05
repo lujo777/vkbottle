@@ -16,6 +16,7 @@ class RunBot:
         self.bot = bot
         self.url = 'https://api.vk.com/method/'
         self.utils = Utils(self.bot.debug)
+        self.utils('Bot was authorised successfully')
         self.utils('Non-async module completed')
         self.method = Method(token, self.url, self.bot.api_version)
 
@@ -76,13 +77,18 @@ class RunBot:
                 event['updates'][0]['object']['user_id'],
                 event['updates'][0]['type']
             ))
-        event_compile = True
-        for rule in self.bot.events[event['updates'][0]['type']]['rule']:
-            event_compile = False if event['updates'][0]['object'].get(rule[0], 'undefined') != rule[1] else True
+        event_type = event['updates'][0]['type']
+        rule = self.bot.events[event_type]['rule']
+        event_compile = True \
+            if rule in event['updates'][0]['object'] \
+               and event['updates'][0]['object'][rule] in self.bot.events[event_type]['equal'] \
+            else False
         if event_compile:
             answer = AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
             self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
-            self.bot.events[event['updates'][0]['type']]['call'](answer)
+            self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
+        else:
+            self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
 
 
 # Async Bot
@@ -92,7 +98,8 @@ class RunBotAsync:
         self.bot = bot
         self.url = 'https://api.vk.com/method/'
         self.utils = Utils(self.bot.debug)
-        self.utils('Non-async module completed')
+        self.utils('Bot was authorised successfully')
+        self.utils('Async module completed')
         self.method = Method(token, self.url, self.bot.api_version)
 
     def run(self, wait):
@@ -165,13 +172,18 @@ class RunBotAsync:
                 event['updates'][0]['object']['user_id'],
                 event['updates'][0]['type']
             ))
-        event_compile = True
-        for rule in self.bot.events[event['updates'][0]['type']]['rule']:
-            event_compile = False if event['updates'][0]['object'].get(rule[0], 'undefined') != rule[1] else True
+        event_type = event['updates'][0]['type']
+        rule = self.bot.events[event_type]['rule']
+        event_compile = True \
+            if rule in event['updates'][0]['object'] \
+            and event['updates'][0]['object'][rule] in self.bot.events[event_type]['equal'] \
+            else False
         if event_compile:
             answer = AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
             self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
-            self.bot.events[event['updates'][0]['type']]['call'](answer)
+            self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
+        else:
+            self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
 
 
 class AnswerObject:

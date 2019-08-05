@@ -15,8 +15,6 @@ class Bot(Events):
         self.group_id = group_id
         self.async_use = asyncio
         self.debug = debug
-        self.__utils = Utils(debug)
-        self.__utils('Bot was authorised successfully')
         # Api Usage
         self.api = Api(token, self.url, self.api_version)
 
