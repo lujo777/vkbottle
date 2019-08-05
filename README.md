@@ -53,6 +53,5 @@ api.messages.send(peer_id=1, message='Hi, my friend!')
 
 All available methods you can find in [VK Methods Documentation](https://vk.com/dev/methods)
 ***
-But now available methods are:
-* messages.send
-* messages.delete
+All groups of methods are supported but only these have special highlighting functions:
+* messages

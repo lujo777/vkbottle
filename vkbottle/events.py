@@ -1,7 +1,12 @@
+from .utils import Utils
+
+
 class Events:
     processor_message = {}
     processor_message_chat = {}
-    undefined_message_func = (lambda *args: print('Add to your on-message file an on-message-undefined decorator'))
+    undefined_message_func = (
+        lambda *args: Utils(True).warn('Add to your on-message file an on-message-undefined decorator')
+    )
     events = {}
 
     def on_message(self, text):

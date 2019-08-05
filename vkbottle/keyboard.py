@@ -1,5 +1,6 @@
 import six
 from enum import Enum
+from .jsontype import dumps
 
 
 def _keyboard(pattern, one_time=False):
@@ -9,7 +10,6 @@ def _keyboard(pattern, one_time=False):
     :return: VK Api Keyboard JSON
     """
     rows = pattern
-    print(rows)
     buttons = list()
     for row in rows:
         row_buttons = list()
@@ -18,14 +18,14 @@ def _keyboard(pattern, one_time=False):
                 action=dict(
                     type="text" if 'type' not in button else button['type'],
                     label=button['text'],
-                    payload=json_dumps("" if 'payload' not in button else button['payload'])
+                    payload=dumps("" if 'payload' not in button else button['payload'])
                 ),
                 color="default" if 'color' not in button else button['color']
             )
             )
         buttons.append(row_buttons)
 
-    keyboard = str(json_dumps(
+    keyboard = str(dumps(
         dict(
             one_time=one_time,
             buttons=buttons
@@ -69,7 +69,7 @@ class Keyboard(object):
         kwargs['ensure_ascii'] = False
         kwargs['separators'] = (',', ':')
 
-        return ujson.dumps(*args, **kwargs)
+        return dumps(*args, **kwargs)
 
     def get_keyboard(self):
         """ Получить json клавиатуры """

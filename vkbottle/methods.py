@@ -1,18 +1,48 @@
 from .keyboard import _keyboard
 from random import randint
 import requests
+import six
 
 
 class Api(object):
-    def __init__(self, token, url, api_version):
+    def __init__(self, token, url, api_version, method=None):
         self.messages = VkMessages(token, url, api_version)
+        self.__token = token
+        self.__url = url
+        self.__api_version = api_version
+        self._method = method
+
+    def __getattr__(self, method):
+        if '_' in method:
+            m = method.split('_')
+            method = m[0] + ''.join(i.title() for i in m[1:])
+
+        return Api(
+            self.__token,
+            self.__url,
+            self.__api_version,
+            (self._method + '.' if self._method else '') + method
+        )
+
+    def __call__(self, **kwargs):
+        for k, v in six.iteritems(kwargs):
+            if isinstance(v, (list, tuple)):
+                kwargs[k] = ','.join(str(x) for x in v)
+        method = self._method.split('.')
+        if len(method) == 2:
+            group = method[0]
+            method = method[1]
+
+            return Method(self.__token, self.__url, self.__api_version)(group, method, kwargs)
 
 
 class VkMessages:
     def __init__(self, token, url, api_version):
         self.method = Method(token, url, api_version)
 
-    def send(self, peer_id: int, message: str, attachment=None, keyboard=None, sticker_id=None, domain=None, chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None, dont_parse_links=False, disable_mentions=False):
+    def send(self, peer_id: int, message: str, attachment=None, keyboard=None, sticker_id=None, domain=None,
+             chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
+             dont_parse_links=False, disable_mentions=False):
         request = dict(
             message=message,
             keyboard=_keyboard(keyboard) if keyboard is not None else None,
@@ -117,12 +147,12 @@ class VkMessages:
         request = {k: v for k, v in request.items() if v is not None}
         return self.method('messages', 'getConversationMembers', request)
 
-    def getConversations(self, offset=0, count=20, filter='all', extended=None, start_message_id=None,
+    def getConversations(self, offset=0, count=20, filter_='all', extended=None, start_message_id=None,
                          fields=None):
         request = dict(
             offset=offset,
             count=count,
-            filter=filter,
+            filter=filter_,
             extended=extended,
             start_message_id=start_message_id,
             fields=fields
@@ -299,10 +329,10 @@ class VkMessages:
         request = {k: v for k, v in request.items() if v is not None}
         return self.method('messages', 'searchConversations', request)
 
-    def setActivity(self, user_id=None, type=None, peer_id=None):
+    def setActivity(self, user_id=None, type_=None, peer_id=None):
         request = dict(
             user_id=user_id,
-            type=type,
+            type=type_,
             peer_id=peer_id
         )
         request = {k: v for k, v in request.items() if v is not None}

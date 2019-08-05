@@ -1,6 +1,6 @@
 from vkbottle import Bot, AnswerObject
 
-bot = Bot('my-token', 1, debug=True, async=True)
+bot = Bot('my-token', 1, debug=True, asyncio=True)
 admin_id = 1  # VK Group admin ID
 
 
@@ -20,6 +20,11 @@ def goodbye(answer: AnswerObject):
 @bot.on_message_undefined()
 def undefined(answer: AnswerObject):
     answer('I didnt understand you :|')
+
+
+@bot.on_group_join()
+def on_join(answer: AnswerObject):
+    answer('Woof! Thanks for this!')
 
 
 if __name__ == "__main__":

@@ -13,5 +13,4 @@ def json_type_utils():
 
 
 def dumps(obj, **kwargs):
-    print(f'{json_module}.dumps({obj}, {kwargs})')
     return eval(json_module).dumps(obj, **kwargs)
