@@ -68,7 +68,7 @@ Parser example looks like this:
 **{parser:arg}**
 
 For example:  
-```'Hello, my dear {user:first_name}!```
+```Hello, my dear {user:first_name}!```
 
 #### User Method Parser
 
