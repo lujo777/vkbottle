@@ -49,6 +49,17 @@ def itz_cat(answer: AnswerObject):
 ```
 Answer is messages.send method without peer_id, it completes automatically
 
+### Keys
+
+If you need it, you can add simple keys to your decorators like this:  
+```python
+@bot.on_message('My name is <name>')
+def my_name(answer: AnswerObject, name):
+    answer('You name is ' + name + '!')
+```
+It is supported in chat-decorators too  
+**Keys are named arguments to the function so should be resolved equal as it was resolved in decorator**
+
 ### Answer-Parsers
 
 There are two types of parsers and 3 parsers at all:

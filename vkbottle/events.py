@@ -1,9 +1,17 @@
 from .utils import Utils
+import re
+
+
+def regex_message(text):
+    pattern = re.sub(r'(<.*?>)',  r'(?P\1.*)', text)
+    return re.compile(pattern)
 
 
 class Events:
     processor_message = {}
+    processor_message_regex = {}
     processor_message_chat = {}
+    processor_message_chat_regex = {}
     undefined_message_func = (
         lambda *args: Utils(True).warn('Add to your on-message file an on-message-undefined decorator')
     )
@@ -11,7 +19,11 @@ class Events:
 
     def on_message(self, text):
         def decorator(func):
-            self.processor_message[text] = func
+            items = re.findall(r'<\w+>', text)
+            if len(items) == 0:
+                self.processor_message[text] = {'call': func}
+            else:
+                self.processor_message_regex[regex_message(text)] = {'call': func}
             return func
         return decorator
 
@@ -23,7 +35,11 @@ class Events:
 
     def on_message_chat(self, text):
         def decorator(func):
-            self.processor_message_chat[text] = func
+            items = re.findall(r'<\w+>', text)
+            if len(items) == 0:
+                self.processor_message_chat[text] = {'call': func}
+            else:
+                self.processor_message_chat_regex[regex_message(text)] = {'call': func}
             return func
         return decorator
 

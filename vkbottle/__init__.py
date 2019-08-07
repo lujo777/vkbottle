@@ -3,7 +3,7 @@ from .events import Events
 from .jsontype import json_type_utils, dumps as json_dumps
 from .methods import Api
 from .keyboard import _keyboard
-from .vkbottle import RunBot, AnswerObject, RunBotAsync
+from .vkbottle import AnswerObject, RunBot
 
 
 # The main
@@ -19,9 +19,5 @@ class Bot(Events):
         self.api = Api(token, self.url, self.api_version)
 
     def run(self, wait=25):
-        if self.async_use is False:
-            runbot = RunBot(self, self.__token)
-            runbot.run(wait)
-        else:
-            runbot = RunBotAsync(self, self.__token)
-            runbot.run(wait)
+        runbot = RunBot(self, self.__token, self.async_use)
+        runbot.run(wait)

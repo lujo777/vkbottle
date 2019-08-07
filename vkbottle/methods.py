@@ -364,4 +364,6 @@ class Method:
             f'{self.url}{group}.{method}/?access_token={self.token}&v={self.api_version}',
             data=args
         ).json()
-        return res['response']
+        if 'response' in res:
+            return res['response']
+        raise ValueError(res)
