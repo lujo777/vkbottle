@@ -72,15 +72,6 @@ class RunBot:
 
     def process_message_chat(self, text: str, obj):
         answer = AnswerObjectChat(self.method, obj, self.bot.group_id)
-        if text in self.bot.processor_message_chat:
-            self.utils('\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(obj['peer_id'], obj['text']))
-            self.bot.processor_message_chat[text](answer)
-            self.utils(
-                'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                    self.bot.processor_message_chat[text].__name__, obj['from_id']
-                ))
-
-        answer = AnswerObjectChat(self.method, obj, self.bot.group_id)
         regex_text = False
         if self.bot.processor_message_chat_regex != {}:
             for key in self.bot.processor_message_chat_regex:
@@ -93,6 +84,10 @@ class RunBot:
                             f'ADD TO {self.bot.processor_message_chat_regex[key]["call"].__name__} FUNCTION REQUIRED ARGS'
                         )
                     else:
+                        self.utils(
+                            'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                                self.bot.processor_message_chat_regex[key]["call"].__name__, obj['from_id']
+                            ))
                         regex_text = True
         if not regex_text:
             if text in self.bot.processor_message:

@@ -6,7 +6,7 @@ admin_id = 1  # VK Group admin ID
 
 @bot.on_message_undefined()
 def who_i_am(answer):
-    answer('I can only change u gender..')
+    answer('I can only change ur gender..')
 
 
 @bot.on_message('now my gender is <gender>')

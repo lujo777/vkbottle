@@ -3,7 +3,8 @@ import re
 
 
 def regex_message(text):
-    pattern = re.sub(r'(<.*?>)',  r'(?P\1.*)', text)
+    escape = {ord(x): ('\\' + x) for x in r'\.*+?()[]|^$'}
+    pattern = re.sub(r'(<.*?>)',  r'(?P\1.*)', text.translate(escape))
     return re.compile(pattern)
 
 
