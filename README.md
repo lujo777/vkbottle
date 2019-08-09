@@ -1,6 +1,17 @@
 # vkbottle
 New VK bot-engine repo with **decorators** like in famous framework flask!
 
+## Install
+
+To install use terminal command:  
+`pip install vkbottle` or  
+ `pip3 install vkbottle`  
+   
+ Supported Python versions:  
+ * Python 3.5
+ * Python 3.6
+ * Python 3.7 and >
+
 ## Usage
 Lets create a simple bot engine
 ```python
