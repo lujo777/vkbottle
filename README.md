@@ -75,6 +75,39 @@ def my_name(answer: AnswerObject, name):
 It is supported in chat-decorators too  
 **Keys are named arguments to the function so should be resolved equal as it was resolved in decorator**
 
+### Keyboard Generator
+
+Let's make a simple keyboard using VKBottle Keyboard Generator:
+```python
+[ # My keyboard
+    [{'text': 'button1'}, {'text': 'button2'}], # row
+    [{'text': 'button3'}] # second row
+]
+```
+Keyboard:  
+{button1}{button2}  
+{-------button3-----}  
+
+Keyboard options for a button:  
+
+Option | Meaning | Default
+------ | ------- | -------
+text | Button text | 
+color | Button color | Default(secondary)
+type | Button action type | text
+
+**With Answer**
+
+```python
+answer(
+    'It\'s my keyboard!',
+    keyboard=[
+        [{'text': 'My Balance'}, {'text': 'Me'}],
+        [{'text': 'shop', 'color': 'positive'}]
+    ]
+)
+```
+
 ### Answer-Parsers
 
 There are two types of parsers and 3 parsers at all:
