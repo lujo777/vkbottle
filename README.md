@@ -1,6 +1,10 @@
 # vkbottle
 New VK bot-engine repo with **decorators** like in famous framework flask!
 
+[![PyPI](https://badge.fury.io/py/vkbottle.svg)](https://pypi.org/project/vkbottle/) 
+[![VK Chat](https://img.shields.io/badge/Vk-Chat-blue)](https://vk.me/join/AJQ1d7fBUBM_800lhEe_AwJj) 
+
+
 ## Install
 
 To install use terminal command:  
