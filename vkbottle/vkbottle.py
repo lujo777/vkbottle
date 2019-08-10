@@ -115,10 +115,10 @@ class RunBot:
                         regex_text = True
         if not regex_text:
             if text in self.bot.processor_message:
-                self.bot.processor_message[text](answer)
+                self.bot.processor_message[text]['call'](answer)
                 self.utils(
                     'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                        self.bot.processor_message[text].__name__, obj['peer_id']
+                        self.bot.processor_message[text]['call'].__name__, obj['peer_id']
                     ))
             else:
                 self.utils(
