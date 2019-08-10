@@ -50,6 +50,7 @@ class RunBot:
         longPollRecycling = False
         while True:
             try:
+<<<<<<< HEAD
                 # [Feature] If LongPoll has a queue of the events after request error
                 # Added v0.18#master
                 if longPollRecycling:
@@ -73,6 +74,8 @@ class RunBot:
                         event_recycling['count']
                     ))
 
+=======
+>>>>>>> 4424293192c02e25ad5c99b41f725cf038321ce6
                 # LongPoll event by server post method
                 url = f"{longpoll['server']}?act=a_check&key={longpoll['key']}&ts={ts}&wait={wait}&rps_delay=0"
                 event = requests.post(url).json()
@@ -83,12 +86,19 @@ class RunBot:
                     event_process.start()
                 else:
                     self.event_processor(event)
+<<<<<<< HEAD
                 # Time behind the next request with multiprocessing - 0.3 sec
+=======
+                # Time behind the next request - 0.3 sec
+>>>>>>> 4424293192c02e25ad5c99b41f725cf038321ce6
 
             except requests.ConnectionError or requests.ConnectTimeout:
                 # No internet connection
                 self.utils.warn('Request Connect Timeout! Reloading LongPoll..')
+<<<<<<< HEAD
                 longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
+=======
+>>>>>>> 4424293192c02e25ad5c99b41f725cf038321ce6
 
             try:
                 # LongPoll server receiving
@@ -101,7 +111,10 @@ class RunBot:
 
             except Exception as e:
                 self.utils.warn('LONGPOLL CONNECTION ERROR! ' + str(e))
+<<<<<<< HEAD
                 longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
+=======
+>>>>>>> 4424293192c02e25ad5c99b41f725cf038321ce6
 
     def event_processor(self, event):
         if event['updates']:
@@ -193,14 +206,20 @@ class RunBot:
         if not regex_text:
             if text in self.bot.processor_message:
                 self.bot.processor_message[text]['call'](answer)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4424293192c02e25ad5c99b41f725cf038321ce6
                 self.utils(
                     'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
                         self.bot.processor_message[text]['call'].__name__, obj['peer_id']
                     ))
             else:
                 self.bot.undefined_message_func(answer)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4424293192c02e25ad5c99b41f725cf038321ce6
                 self.utils(
                     'New message compile decorator was not found. ' +
                     'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(

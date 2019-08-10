@@ -1,6 +1,10 @@
 # vkbottle
 New VK bot-engine repo with **decorators** like in famous framework flask!
 
+[![PyPI](https://badge.fury.io/py/vkbottle.svg)](https://pypi.org/project/vkbottle/) 
+[![VK Chat](https://img.shields.io/badge/Vk-Chat-blue)](https://vk.me/join/AJQ1d7fBUBM_800lhEe_AwJj) 
+[![Build Status](https://travis-ci.com/timoniq/vkbottle.svg?branch=master)](https://travis-ci.com/timoniq/vkbottle)
+
 ## Install
 
 To install use terminal command:  
@@ -24,7 +28,7 @@ Name | Value
 token | Your VK Group token for longpoll starting (**str**)
 group_id | Your VK Group ID (**int** )
 debug | Should vkbottle show debug messages? Default to False (**bool**)
-async | Should vkbottle (Bot) use asyncio to reach more faster results. Default to True (**bool**)
+asyncio | Should vkbottle (Bot) use asyncio to reach more faster results. Default to True (**bool**)
 
 Now we should import our event-files like this: `import events` with `bot.run()` in it or make it in one single file
 
@@ -70,6 +74,39 @@ def my_name(answer: AnswerObject, name):
 ```
 It is supported in chat-decorators too  
 **Keys are named arguments to the function so should be resolved equal as it was resolved in decorator**
+
+### Keyboard Generator
+
+Let's make a simple keyboard using VKBottle Keyboard Generator:
+```python
+[ # My keyboard
+    [{'text': 'button1'}, {'text': 'button2'}], # row
+    [{'text': 'button3'}] # second row
+]
+```
+Keyboard:  
+{button1}{button2}  
+{-------button3-----}  
+
+Keyboard options for a button:  
+
+Option | Meaning | Default
+------ | ------- | -------
+text | Button text | 
+color | Button color | Default(secondary)
+type | Button action type | text
+
+**With Answer**
+
+```python
+answer(
+    'It\'s my keyboard!',
+    keyboard=[
+        [{'text': 'My Balance'}, {'text': 'Me'}],
+        [{'text': 'shop', 'color': 'positive'}]
+    ]
+)
+```
 
 ### Answer-Parsers
 
