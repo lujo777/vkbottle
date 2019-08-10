@@ -10,7 +10,10 @@ setup(
   url = 'https://github.com/timoniq/vkbottle',
   download_url = 'https://github.com/timoniq/vkbottle/archive/v0.1.tar.gz',
   keywords = ['vk', 'vkontakte', 'vk-api', 'vk-bot', 'vkbottle', 'vk-bottle'],
-  install_requires=[],
+  install_requires=[
+    'requests',
+    'six'
+  ],
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
