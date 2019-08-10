@@ -15,3 +15,7 @@ class Utils:
     def warn(self, text):
         if self.debug is True:
             print("[\x1b[34mVK Bottle WARN\x1b[0m] \x1b[31;1m" + re.sub('#', str(time()), text) + "\x1b[0m")
+
+    @staticmethod
+    def error(text):
+        print("[\x1b[34mVK Bottle CRITICAL ERROR\x1b[0m] \x1b[31;1m" + re.sub('#', str(time()), text) + "\x1b[0m")
