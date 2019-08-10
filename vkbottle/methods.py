@@ -1,6 +1,7 @@
 from .keyboard import _keyboard
 from random import randint
 import requests
+from .exceptions import *
 import six
 
 
@@ -364,6 +365,9 @@ class Method:
             f'{self.url}{group}.{method}/?access_token={self.token}&v={self.api_version}',
             data=args
         ).json()
-        if 'response' in res:
+        try:
             return res['response']
-        raise ValueError(res)
+        except KeyError as e:
+            raise VKError(f"Error code {res['error']['error_code']}, {res['error']['error_msg']}")
+
+        # raise ValueError(res)
