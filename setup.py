@@ -1,11 +1,11 @@
-from .vkbottle import __version__
+import vkbottle
 import setuptools
 
 from distutils.core import setup
 setup(
   name='vkbottle',
   packages=['vkbottle'],
-  version=__version__,
+  version=vkbottle.__version__,
   license='MIT',
   description='New bot-creating repo with options control like in the flask!',
   author='Arseniy Timonik',
