@@ -167,7 +167,7 @@ class RunBot:
                 self.bot.processor_message_chat[text]['call'](answer)
                 self.utils(
                     'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                        self.bot.processor_message[text]['call'].__name__, obj['peer_id']
+                        self.bot.processor_message_chat[text]['call'].__name__, obj['from_id']
                     ))
 
     def process_message(self, text: str, obj):
