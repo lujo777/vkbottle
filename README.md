@@ -169,3 +169,24 @@ All available methods you can find in [VK Methods Documentation](https://vk.com/
 ***
 All groups of methods are supported but only these have special highlighting functions:
 * messages
+***
+
+### User Api
+
+To authorise user use this method:
+```python
+from vkbottle import User
+user = User('my-token', user_id=1)
+```
+Argument | Description
+-------- | -----------
+token | Vk Api token (**str**)
+user_id | User ID (**int**)
+debug | Should VKBottle escape debugging messages. Default to False (**bool**)
+
+**User Api** is equal to the Bot Api but doesn't have highlighting feature:
+```python
+# ...
+user_api = user.api
+user_api.messages.send(peer_id=1, message='Hello my colleague!', random_id=100)
+```

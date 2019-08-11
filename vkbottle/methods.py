@@ -6,8 +6,9 @@ import six
 
 
 class Api(object):
-    def __init__(self, token, url, api_version, method=None):
-        self.messages = VkMessages(token, url, api_version)
+    def __init__(self, token, url, api_version, method=None, user=False):
+        if not user:
+            self.messages = VkMessages(token, url, api_version)
         self.__token = token
         self.__url = url
         self.__api_version = api_version
@@ -365,9 +366,15 @@ class Method:
             f'{self.url}{group}.{method}/?access_token={self.token}&v={self.api_version}',
             data=args
         ).json()
-        try:
+        if 'response' not in res:
+            """
+            When the error appeared exception VKError will return list with error code and error message
+            """
+            raise VKError(
+                [
+                    res['error']['error_code'],
+                    res['error']['error_msg']
+                ]
+            )
+        else:
             return res['response']
-        except KeyError as e:
-            raise VKError(f"Error code {res['error']['error_code']}, {res['error']['error_msg']}")
-
-        # raise ValueError(res)
