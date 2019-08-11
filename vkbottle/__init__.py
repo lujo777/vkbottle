@@ -12,7 +12,7 @@ from .vkbottle import AnswerObject, RunBot
 
 from .exceptions import *
 
-__version__ = '0.11'  # Package VKBottle version
+__version__ = '0.12'  # Package VKBottle version
 
 __api_version__ = 5.101  # VK Api version
 
