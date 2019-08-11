@@ -47,8 +47,32 @@ class RunBot:
             self.utils.error('LongPoll Connection error! Check your internet connection and try again!')
 
     def __run(self, wait, longpoll, ts):
+        longPollRecycling = False
         while True:
             try:
+                # [Feature] If LongPoll has a queue of the events after request error
+                # Added v0.18#master
+                if longPollRecycling:
+                    self.utils('Sorting a queue of messages after LongPoll Request error...')
+                    event_recycling = self.method(
+                        'messages', 'getConversations',
+                        {'offset': 0, 'count': 200, 'filter': 'unanswered'}
+                    )
+
+                    for message in event_recycling['items']:
+
+                        # Event Processing
+                        if self.asyncio:
+                            event_process = Process(target=self.event_processor, args=(message['last_message'],))
+                            event_process.start()
+                        else:
+                            self.event_processor(message['last_message'])
+
+                    longPollRecycling = False
+                    self.utils('Events was sorted successfully, sorted {} messages'.format(
+                        event_recycling['count']
+                    ))
+
                 # LongPoll event by server post method
                 url = f"{longpoll['server']}?act=a_check&key={longpoll['key']}&ts={ts}&wait={wait}&rps_delay=0"
                 event = requests.post(url).json()
@@ -59,11 +83,12 @@ class RunBot:
                     event_process.start()
                 else:
                     self.event_processor(event)
-                # Time behind the next request - 0.3 sec
+                # Time behind the next request with multiprocessing - 0.3 sec
 
             except requests.ConnectionError or requests.ConnectTimeout:
                 # No internet connection
                 self.utils.warn('Request Connect Timeout! Reloading LongPoll..')
+                longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
 
             try:
                 # LongPoll server receiving
@@ -76,6 +101,7 @@ class RunBot:
 
             except Exception as e:
                 self.utils.warn('LONGPOLL CONNECTION ERROR! ' + str(e))
+                longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
 
     def event_processor(self, event):
         if event['updates']:
@@ -167,12 +193,14 @@ class RunBot:
         if not regex_text:
             if text in self.bot.processor_message:
                 self.bot.processor_message[text]['call'](answer)
+
                 self.utils(
                     'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
                         self.bot.processor_message[text]['call'].__name__, obj['peer_id']
                     ))
             else:
                 self.bot.undefined_message_func(answer)
+
                 self.utils(
                     'New message compile decorator was not found. ' +
                     'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(
@@ -247,21 +275,28 @@ class AnswerObject:
         user_parse = list(set(re.findall(r'{user:\w+}', message)))
         group_parse = list(set(re.findall(r'{group:\w+}', message)))
         self_parse = list(set(re.findall(r'{self:\w+}', message)))
+
         if user_parse:
             user = self.method('users', 'get', {'user_ids': self.peer_id})[0]
+
             for parser in user_parse:
                 message = message.replace(
                     parser, str(user.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
         if group_parse:
             group = self.method('groups', 'getById', {'group_id': self.group_id})[0]
+
             for parser in group_parse:
                 message = message.replace(
                     parser, str(group.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
         if self_parse:
-            selfs = self.self_parse
+            self_ = self.self_parse
+
             for parser in self_parse:
                 message = message.replace(
-                    parser, str(selfs.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+                    parser, str(self_.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
         return message
 
 
@@ -306,19 +341,26 @@ class AnswerObjectChat:
         user_parse = list(set(re.findall(r'{user:\w+}', message)))
         group_parse = list(set(re.findall(r'{group:\w+}', message)))
         self_parse = list(set(re.findall(r'{self:\w+}', message)))
+
         if user_parse:
             user = self.method('users', 'get', {'user_ids': self.user_id})[0]
+
             for parser in user_parse:
                 message = message.replace(
                     parser, str(user.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
         if group_parse:
             group = self.method('groups', 'getById', {'group_id': self.group_id})[0]
+
             for parser in group_parse:
                 message = message.replace(
                     parser, str(group.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
         if self_parse:
-            selfs = self.self_parse
+            self_ = self.self_parse
+
             for parser in self_parse:
                 message = message.replace(
-                    parser, str(selfs.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+                    parser, str(self_.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
         return message
