@@ -5,6 +5,10 @@ New VK bot-engine repo with **decorators** like in famous framework flask!
 [![VK Chat](https://img.shields.io/badge/Vk-Chat-blue)](https://vk.me/join/AJQ1d7fBUBM_800lhEe_AwJj) 
 [![Build Status](https://travis-ci.com/timoniq/vkbottle.svg?branch=master)](https://travis-ci.com/timoniq/vkbottle)
 
+##### README VERSIONS:  
+* [Русская версия](https://github.com/timoniq/vkbottle/blob/master/RU-README.md)
+
+
 ## Install
 
 To install use terminal command:  
