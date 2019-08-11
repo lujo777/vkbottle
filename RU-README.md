@@ -1,5 +1,5 @@
 # vkbottle
-Ноовый репозиторий для быстрой и удобной работы с Vk API с использованием **декораторов**, как в известном фреймворке Flask!
+Новый репозиторий для быстрой и удобной работы с Vk API с использованием **декораторов**, как в известном фреймворке Flask!
 
 [![PyPI](https://badge.fury.io/py/vkbottle.svg)](https://pypi.org/project/vkbottle/) 
 [![VK Chat](https://img.shields.io/badge/Чат-Вконтакте-blue)](https://vk.me/join/AJQ1d7fBUBM_800lhEe_AwJj) 

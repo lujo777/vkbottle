@@ -1,10 +1,17 @@
 from .jsontype import json_type_utils
+
 from .utils import Utils
+
 from .keyboard import _keyboard
+
 from .methods import Method
+
 from random import randint
+
 import re
-import requests
+
+import requests  # requirements.txt
+
 from multiprocessing import Process
 
 
@@ -155,12 +162,12 @@ class RunBot:
                         regex_text = True
 
         if not regex_text:
-            if text in self.bot.processor_message:
+            if text in self.bot.processor_message_chat:
                 self.utils('\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(obj['peer_id'], obj['text']))
-                self.bot.processor_message_chat[text](answer)
+                self.bot.processor_message_chat[text]['call'](answer)
                 self.utils(
                     'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                        self.bot.processor_message[text].__name__, obj['peer_id']
+                        self.bot.processor_message[text]['call'].__name__, obj['peer_id']
                     ))
 
     def process_message(self, text: str, obj):
