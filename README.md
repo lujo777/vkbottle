@@ -23,7 +23,7 @@ To install use terminal command:
 ## Usage
 Lets create a simple bot engine
 ```python
-from vkbottle import Bot, MessageAnswer
+from vkbottle import Bot, AnswerObject
 
 bot = Bot(token, group_id, debug=True)
 ```
