@@ -18,7 +18,11 @@ class RunBot:
 
         self.utils = Utils(self.bot.debug)
         self.utils('Bot <{}> was authorised successfully'.format(self.bot.group_id))
-        self.utils('Module completed')
+        self.utils(
+            'Module completed. MODULE USING LONGPOLL VERSION {}'.format(
+                self.bot.api_version
+            )
+            )
 
         self.method = Method(token, self.url, self.bot.api_version)
 
@@ -32,22 +36,35 @@ class RunBot:
             ))
         self.utils(json_type_utils())
 
-        try:
-            longpoll = self.method(
-                'groups',
-                'getLongPollServer',
-                {"group_id": self.bot.group_id}
-            )
-            ts = longpoll['ts']
+        # [Feature] If LongPoll is not enabled in the group it automatically stops
+        # Added v0.19#master
+        longPollEnabled = self.method('groups', 'getLongPollSettings', {'group_id': self.bot.group_id})['is_enabled']
 
-            self.utils('Started listening LongPoll...')
+        if longPollEnabled:
 
-            self.__run(wait, longpoll, ts)
-        except requests.ConnectionError or requests.ConnectTimeout:
-            self.utils.error('LongPoll Connection error! Check your internet connection and try again!')
+            try:
+
+                longpoll = self.method(
+                    'groups',
+                    'getLongPollServer',
+                    {"group_id": self.bot.group_id}
+                )
+                ts = longpoll['ts']
+
+                self.utils('Started listening LongPoll...')
+
+                self.__run(wait, longpoll, ts)
+
+            except requests.ConnectionError or requests.ConnectTimeout:
+                self.utils.error('LongPoll Connection error! Check your internet connection and try again!')
+
+        else:
+            self.utils.error('LongPoll is not enabled in your group')
 
     def __run(self, wait, longpoll, ts):
+
         longPollRecycling = False
+
         while True:
             try:
                 # [Feature] If LongPoll has a queue of the events after request error
@@ -104,23 +121,31 @@ class RunBot:
                 longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
 
     def event_processor(self, event):
-        if event['updates']:
-            # If updates more than one
-            for update in event['updates']:
-                obj = update['object']
+        try:
+            if event['updates']:
+                # If updates more than one
+                for update in event['updates']:
+                    obj = update['object']
 
-                if update['type'] == 'message_new':
+                    if update['type'] == 'message_new':
 
-                    if obj['peer_id'] < 2e9:
-                        # For private messages
-                        self.process_message(obj['text'], obj)
-                    else:
-                        # For chat messages
-                        self.process_message_chat(obj['text'], obj)
+                        if obj['peer_id'] < 2e9:
+                            # For private messages
+                            self.process_message(obj['text'], obj)
+                        else:
+                            # For chat messages
+                            self.process_message_chat(obj['text'], obj)
 
-                elif update['type'] in self.bot.events:
-                    # For main LongPoll events
-                    self.process_event(event)
+                    elif update['type'] in self.bot.events:
+                        # For main LongPoll events
+                        self.process_event(event)
+        except KeyError as deprKey:
+            self.utils.error(
+                'LongPoll Parse error with key \'{}\', check that version of your LongPoll is {}'.format(
+                    deprKey,
+                    self.bot.api
+                )
+            )
 
     def process_message_chat(self, text: str, obj):
         # Answer object for fast chat msg-parsing
