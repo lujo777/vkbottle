@@ -45,6 +45,13 @@ def hi(answer):
     print('Somebody wrote me "hi!"!')
 # bot.run()
 ```
+#### @on_message_chat(text)
+```python
+@bot.on_message_chat('hi!')
+def hi(answer):
+    print('Somebody wrote me "hi!" in chat!')
+# bot.run()
+```
 #### @on_message_undefined()
 ```python
 @bot.message_undefined()
@@ -52,6 +59,16 @@ def undefined(answer):
     print('I cannot understand somebody')
 # bot.run()
 ```
+#### @on_message_both(text)
+```python
+@bot.on_message_both('hi!')
+def hi(answer):
+    print('Somebody wrote me "hi!" in chat or in private!')
+# bot.run()
+```
+
+* decorators can be merged
+
 How to use **answer**?
 There're a lot of supported methods:
 

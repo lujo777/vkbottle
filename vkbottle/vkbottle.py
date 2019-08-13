@@ -378,6 +378,7 @@ class AsyncAnswer:
             self.obj = obj
             self.group_id = group_id
             self.peer_id = obj['peer_id']
+            self.user_id = self.peer_id
             self.self_parse = dict(
                 group_id=group_id,
                 peer_id=self.peer_id
@@ -512,6 +513,7 @@ class SynchroAnswer:
             self.obj = obj
             self.group_id = group_id
             self.peer_id = obj['peer_id']
+            self.user_id = self.peer_id
             self.self_parse = dict(
                 group_id=group_id,
                 peer_id=self.peer_id
