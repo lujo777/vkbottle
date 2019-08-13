@@ -148,9 +148,9 @@ class RunBot:
                         await self.process_event(event)
         except KeyError as deprKey:
             self.utils.error(
-                'LongPoll Parse error with key \'{}\', check that version of your LongPoll is {}'.format(
+                'LongPoll Parse error with key {}, check that version of your LongPoll is {}'.format(
                     deprKey,
-                    self.bot.api
+                    self.bot.api_version
                 )
             )
         except RuntimeError as warn:
@@ -208,7 +208,7 @@ class RunBot:
                             regex_text = True
 
             if not regex_text:
-                if text in self.bot.processor_message:
+                if text in self.bot.processor_message_chat:
                     self.utils('\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(obj['peer_id'], obj['text']))
                     # [Feature] Async Use
                     # Added v0.19#master
