@@ -32,7 +32,7 @@ Name | Value
 token | Your VK Group token for longpoll starting (**str**)
 group_id | Your VK Group ID (**int** )
 debug | Should vkbottle show debug messages? Default to False (**bool**)
-asyncio | Should vkbottle (Bot) use asyncio to reach more faster results. Default to True (**bool**)
+async_use | Should vkbottle (Bot) use asyncio to reach more faster results. Default to False (**bool**)
 
 Now we should import our event-files like this: `import events` with `bot.run()` in it or make it in one single file
 
@@ -45,6 +45,13 @@ def hi(answer):
     print('Somebody wrote me "hi!"!')
 # if __name__ == '__main__': bot.run()
 ```
+#### @on_message_chat(text)
+```python
+@bot.on_message_chat('hi!')
+def hi(answer):
+    print('Somebody wrote me "hi!" in chat!')
+# bot.run()
+```
 #### @on_message_undefined()
 ```python
 @bot.on_message_undefined()
@@ -52,6 +59,21 @@ def undefined(answer):
     print('I cannot understand somebody')
 # if __name__ == '__main__': bot.run()
 ```
+#### @on_message_both(text)
+```python
+@bot.on_message_both('hi!')
+def hi(answer):
+    print('Somebody wrote me "hi!" in chat or in private!')
+# bot.run()
+```
+
+* decorators can be combined 
+
+Argument | Description
+-------- | -----------
+text | Text which will approve the decorator condition (**str**)
+priority | Set the decorator priority. Default to 0 (**int**)
+
 How to use **answer**?
 There're a lot of supported methods:
 
@@ -62,7 +84,7 @@ answer(text, attachment=None, keyboard=None, sticker=None) | Needed for fast ans
 Examples:  
 ```python
 @bot.on_message('cat')
-def itz_cat(answer: AnswerObject):
+def itz_cat(answer):
     answer('Myaaw')
 # When user send message "cat" to bot, it answers "Myaaw"
 ```
@@ -73,11 +95,21 @@ Answer is messages.send method without peer_id, it completes automatically
 If you need it, you can add simple keys to your decorators like this:  
 ```python
 @bot.on_message('My name is <name>')
-def my_name(answer: AnswerObject, name):
+def my_name(answer, name):
     answer('You name is ' + name + '!')
 ```
 It is supported in chat-decorators too  
 **Keys are named arguments to the function so should be resolved equal as it was resolved in decorator**
+
+### Async Use
+
+To use async in your plugins just make `async_use` to True and all your events and messages functions to async:
+```python
+@bot.on_message('how are you')
+def how_are_you(answer):
+    await answer('I\'m in the golden age of grotesque!')
+    # answer calling should be in await expression
+```
 
 ### Keyboard Generator
 

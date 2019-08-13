@@ -1,11 +1,11 @@
-from vkbottle import Bot, AnswerObject
+from vkbottle import Bot
 
 bot = Bot('my-token', 1, debug=True, asyncio=True)
 admin_id = 1  # VK Group admin ID
 
 
 @bot.on_message('dobby show keyboard')
-def keyboard(answer: AnswerObject):
+def keyboard(answer):
     answer('Ok guurls take ur bibs!',
            keyboard=[
                [{'text': 'Call the police'}],
@@ -14,7 +14,7 @@ def keyboard(answer: AnswerObject):
 
 
 @bot.on_message('dobby skip it')
-def keyboard_skip(answer: AnswerObject):
+def keyboard_skip(answer):
     answer('Ok..',
            keyboard=[]  # This keyboard is empty!
            )

@@ -9,22 +9,29 @@ def regex_message(text):
 
 
 class Events:
-    processor_message = {}
     processor_message_regex = {}
-    processor_message_chat = {}
     processor_message_chat_regex = {}
     undefined_message_func = (
         lambda *args: Utils(True).warn('Add to your on-message file an on-message-undefined decorator')
     )
     events = {}
 
-    def on_message(self, text):
+    def on_message(self, text, priority: int = 0):
         def decorator(func):
-            items = re.findall(r'<\w+>', text)
-            if len(items) == 0:
-                self.processor_message[text] = {'call': func}
-            else:
-                self.processor_message_regex[regex_message(text)] = {'call': func}
+            if priority not in self.processor_message_regex:
+                self.processor_message_regex[priority] = {}
+            self.processor_message_regex[priority][regex_message(text)] = {'call': func}
+            return func
+        return decorator
+
+    def on_message_both(self, text, priority: int = 0):
+        def decorator(func):
+            if priority not in self.processor_message_regex:
+                self.processor_message_regex[priority] = {}
+            if priority not in self.processor_message_chat_regex:
+                self.processor_message_chat_regex[priority] = {}
+            self.processor_message_regex[priority][regex_message(text)] = {'call': func}
+            self.processor_message_chat_regex[priority][regex_message(text)] = {'call': func}
             return func
         return decorator
 
@@ -34,13 +41,11 @@ class Events:
             return func
         return decorator
 
-    def on_message_chat(self, text):
+    def on_message_chat(self, text, priority: int = 0):
         def decorator(func):
-            items = re.findall(r'<\w+>', text)
-            if len(items) == 0:
-                self.processor_message_chat[text] = {'call': func}
-            else:
-                self.processor_message_chat_regex[regex_message(text)] = {'call': func}
+            if priority not in self.processor_message_chat_regex:
+                self.processor_message_chat_regex[priority] = {}
+            self.processor_message_chat_regex[priority][regex_message(text)] = {'call': func}
             return func
         return decorator
 

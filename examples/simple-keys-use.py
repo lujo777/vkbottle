@@ -1,6 +1,6 @@
-from vkbottle import Bot, AnswerObject
+from vkbottle import Bot
 
-bot = Bot('my-token', 1, debug=True, asyncio=True)
+bot = Bot('my-token', 1, debug=True)
 admin_id = 1  # VK Group admin ID
 
 

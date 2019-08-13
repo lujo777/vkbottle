@@ -7,13 +7,13 @@ setup(
   packages=['vkbottle'],
   version=vkbottle.__version__,
   license='MIT',
-  description='New bot-creating repo with options control like in the flask!',
+  description='New bot-creating repo with options control like in the famous framework flask!',
   author='Arseniy Timonik',
   author_email='timonik.bss@gmail.com',
   url='https://github.com/timoniq/vkbottle',
   long_description=open('README.md', encoding='utf-8').read(),
   long_description_content_type='text/markdown',
-  download_url='https://github.com/timoniq/vkbottle/archive/v0.12.tar.gz',
+  download_url='https://github.com/timoniq/vkbottle/archive/v' + __version__ + '.tar.gz',
   keywords=['vk', 'vkontakte', 'vk-api', 'vk-bot', 'vkbottle', 'vk-bottle'],
   install_requires=[
     'requests',
@@ -26,6 +26,6 @@ setup(
     'License :: OSI Approved :: MIT License',
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.7'
   ],
 )
