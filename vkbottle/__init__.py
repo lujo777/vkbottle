@@ -8,24 +8,25 @@ from .methods import Api
 
 from .keyboard import _keyboard
 
-from .vkbottle import AnswerObject, RunBot
+from .vkbottle import RunBot
 
 from .exceptions import *
 
-__version__ = '0.11'  # Package VKBottle version
+__version__ = '0.13'  # Package VKBottle version
 
 __api_version__ = 5.101  # VK Api version
 
 
 # Main Bot Auth
 class Bot(Events):
-    def __init__(self, token, group_id, debug=False, asyncio=True):
+    def __init__(self, token, group_id, debug=False, async_use=False, **deprecated):
         self.__token = token
         self.api_version = __api_version__
         self.url = 'https://api.vk.com/method/'
         self.group_id = group_id
-        self.async_use = asyncio
+        self.async_use = async_use
         self.debug = debug
+        self.deprecated = deprecated
         # Api Usage
         self.api = Api(token, self.url, self.api_version)
 

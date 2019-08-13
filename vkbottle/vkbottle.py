@@ -5,16 +5,18 @@ from .methods import Method
 from random import randint
 import re
 import requests
-from multiprocessing import Process
+import types
+# from multiprocessing import Process
+import asyncio
 
 
 # Bot Universal Class
 class RunBot:
-    def __init__(self, bot, token, asyncio=True):
+    def __init__(self, bot, token, async_use=False):
         self._token = token
         self.bot = bot
         self.url = 'https://api.vk.com/method/'
-        self.asyncio = asyncio
+        self.async_use = async_use
 
         self.utils = Utils(self.bot.debug)
         self.utils('Bot <{}> was authorised successfully'.format(self.bot.group_id))
@@ -23,8 +25,11 @@ class RunBot:
                 self.bot.api_version
             )
             )
-
+        # Deprecated names
+        if 'asyncio' in self.bot.deprecated:
+            self.utils.warn('Name \'asyncio\' is now deprecated. Use name \'async_use\' and read the docs at')
         self.method = Method(token, self.url, self.bot.api_version)
+        self._loop = asyncio.get_event_loop
 
     def run(self, wait):
         self.utils(
@@ -79,11 +84,8 @@ class RunBot:
                     for message in event_recycling['items']:
 
                         # Event Processing
-                        if self.asyncio:
-                            event_process = Process(target=self.event_processor, args=(message['last_message'],))
-                            event_process.start()
-                        else:
-                            self.event_processor(message['last_message'])
+                        loop = self._loop()
+                        loop.run_until_complete(self.event_processor(message['last_message']))
 
                     longPollRecycling = False
                     self.utils('Events was sorted successfully, sorted {} messages'.format(
@@ -95,17 +97,22 @@ class RunBot:
                 event = requests.post(url).json()
 
                 # Event Processing
-                if self.asyncio:
-                    event_process = Process(target=self.event_processor, args=(event,))
-                    event_process.start()
-                else:
-                    self.event_processor(event)
+                loop = self._loop()
+                loop.run_until_complete(self.event_processor(event))
                 # Time behind the next request with multiprocessing - 0.3 sec
 
             except requests.ConnectionError or requests.ConnectTimeout:
                 # No internet connection
                 self.utils.warn('Request Connect Timeout! Reloading LongPoll..')
                 longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
+
+            except RuntimeError as warn:
+                self.utils.warn(
+                    'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
+                    ' or upside down!'.format(
+                        warn
+                    )
+                )
 
             try:
                 # LongPoll server receiving
@@ -120,7 +127,7 @@ class RunBot:
                 self.utils.warn('LONGPOLL CONNECTION ERROR! ' + str(e))
                 longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
 
-    def event_processor(self, event):
+    async def event_processor(self, event):
         try:
             if event['updates']:
                 # If updates more than one
@@ -131,14 +138,14 @@ class RunBot:
 
                         if obj['peer_id'] < 2e9:
                             # For private messages
-                            self.process_message(obj['text'], obj)
+                            await self.process_message(obj['text'], obj)
                         else:
                             # For chat messages
-                            self.process_message_chat(obj['text'], obj)
+                            await self.process_message_chat(obj['text'], obj)
 
                     elif update['type'] in self.bot.events:
                         # For main LongPoll events
-                        self.process_event(event)
+                        await self.process_event(event)
         except KeyError as deprKey:
             self.utils.error(
                 'LongPoll Parse error with key \'{}\', check that version of your LongPoll is {}'.format(
@@ -146,246 +153,485 @@ class RunBot:
                     self.bot.api
                 )
             )
+        except RuntimeError as warn:
+            self.utils.warn(
+                'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
+                ' or upside down!'.format(
+                    warn
+                )
+            )
 
-    def process_message_chat(self, text: str, obj):
-        # Answer object for fast chat msg-parsing
-        answer = AnswerObjectChat(self.method, obj, self.bot.group_id)
-        regex_text = False
+    async def process_message_chat(self, text: str, obj):
+        try:
 
-        if self.bot.processor_message_chat_regex != {}:
+            # Answer object for fast chat msg-parsing
 
-            for key in self.bot.processor_message_chat_regex:
+            # [Feature] Async Answers
+            # Added v0.19#master
+            ansObject = SynchroAnswer
+            if self.async_use:
+                ansObject = AsyncAnswer
 
-                if key.match(text) is not None:
+            answer = ansObject.AnswerObjectChat(self.method, obj, self.bot.group_id)
+            regex_text = False
+
+            if self.bot.processor_message_chat_regex != {}:
+
+                for key in self.bot.processor_message_chat_regex:
+
+                    if key.match(text) is not None:
+                        self.utils(
+                            '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
+                                obj['peer_id'],
+                                obj['text']
+                            ))
+
+                        try:
+                            # Try to run Events processor with passed arguments
+                            if self.async_use:
+                                # [Feature] Async Use
+                                # Added v0.19#master
+                                asyncio.ensure_future(self.bot.processor_message_chat_regex[key]['call'](answer, **key.match(text).groupdict()))
+                            else:
+                                self.bot.processor_message_chat_regex[key]['call'](answer, **key.match(text).groupdict())
+                        except TypeError:
+                            self.utils.error(
+                                'ADD TO {} FUNCTION REQUIRED ARGS'.format(
+                                    self.bot.processor_message_chat_regex[key]["call"].__name__
+                                ))
+                        else:
+                            self.utils(
+                                'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                                    self.bot.processor_message_chat_regex[key]["call"].__name__, obj['from_id']
+                                ))
+                        finally:
+                            regex_text = True
+
+            if not regex_text:
+                if text in self.bot.processor_message:
+                    self.utils('\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(obj['peer_id'], obj['text']))
+                    # [Feature] Async Use
+                    # Added v0.19#master
+                    if self.async_use:
+                        asyncio.ensure_future(self.bot.processor_message_chat[text](answer))
+                    else:
+                        self.bot.processor_message_chat[text](answer)
                     self.utils(
-                        '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
-                            obj['peer_id'],
-                            obj['text']
+                        'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                            self.bot.processor_message[text].__name__, obj['peer_id']
                         ))
 
-                    try:
-                        # Try to run Events processor with passed arguments
-                        self.bot.processor_message_chat_regex[key]['call'](answer, **key.match(text).groupdict())
-                    except TypeError:
-                        self.utils.error(
-                            'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                self.bot.processor_message_chat_regex[key]["call"].__name__
-                            ))
-                    else:
-                        self.utils(
-                            'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                                self.bot.processor_message_chat_regex[key]["call"].__name__, obj['from_id']
-                            ))
-                    finally:
-                        regex_text = True
+        except RuntimeError as warn:
+            self.utils.warn(
+                'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
+                ' or upside down!'.format(
+                    warn
+                )
+            )
 
-        if not regex_text:
-            if text in self.bot.processor_message:
-                self.utils('\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(obj['peer_id'], obj['text']))
-                self.bot.processor_message_chat[text](answer)
-                self.utils(
-                    'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                        self.bot.processor_message[text].__name__, obj['peer_id']
-                    ))
+    async def process_message(self, text: str, obj):
+        try:
 
-    def process_message(self, text: str, obj):
-        # Answer object for fast msg-parsing
-        answer = AnswerObject(self.method, obj, self.bot.group_id)
-        regex_text = False
+            # Answer object for fast msg-parsing
 
-        self.utils(
-            '\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(
-                obj['peer_id'],
-                obj['text']
-            ))
+            # [Feature] Async Answers
+            # Added v0.19#master
+            ansObject = SynchroAnswer
+            if self.async_use:
+                ansObject = AsyncAnswer
 
-        if self.bot.processor_message_regex != {}:
+            answer = ansObject.AnswerObject(self.method, obj, self.bot.group_id)
+            regex_text = False
 
-            for key in self.bot.processor_message_regex:
+            self.utils(
+                '\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(
+                    obj['peer_id'],
+                    obj['text']
+                ))
 
-                if key.match(text) is not None:
-                    try:
-                        self.bot.processor_message_regex[key]['call'](answer, **key.match(text).groupdict())
-                    except TypeError:
-                        self.utils.error(
-                            'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                self.bot.processor_message_regex[key]["call"].__name__
+            if self.bot.processor_message_regex != {}:
+
+                for key in self.bot.processor_message_regex:
+
+                    if key.match(text) is not None:
+                        try:
+                            # [Feature] Async Use
+                            # Added v0.19#master
+                            if self.async_use:
+                                asyncio.ensure_future(self.bot.processor_message_regex[key]['call'](answer, **key.match(text).groupdict()))
+                            else:
+                                self.bot.processor_message_regex[key]['call'](answer, **key.match(text).groupdict())
+                        except TypeError:
+                            self.utils.error(
+                                'ADD TO {} FUNCTION REQUIRED ARGS'.format(
+                                    self.bot.processor_message_regex[key]["call"].__name__
+                                )
                             )
-                        )
-                    finally:
-                        regex_text = True
+                        finally:
+                            regex_text = True
 
-        if not regex_text:
-            if text in self.bot.processor_message:
-                self.bot.processor_message[text]['call'](answer)
+            if not regex_text:
+                if text in self.bot.processor_message:
+                    # [Feature] Async Use
+                    # Added v0.19#master
+                    if self.async_use:
+                        asyncio.ensure_future(self.bot.processor_message[text]['call'](answer))
+                    else:
+                        self.bot.processor_message[text]['call'](answer)
 
-                self.utils(
-                    'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                        self.bot.processor_message[text]['call'].__name__, obj['peer_id']
-                    ))
+                    self.utils(
+                        'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                            self.bot.processor_message[text]['call'].__name__, obj['peer_id']
+                        ))
+                else:
+                    # [Feature] Async Use
+                    # Added v0.19#master
+                    if self.async_use:
+                        if isinstance(self.bot.undefined_message_func, types.FunctionType):
+                            asyncio.ensure_future(self.bot.undefined_message_func(answer))
+                        else:
+                            self.bot.undefined_message_func(answer)
+                    else:
+                        self.bot.undefined_message_func(answer)
+
+                    self.utils(
+                        'New message compile decorator was not found. ' +
+                        'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(
+                            obj['peer_id']
+                        ))
+
+        except TypeError as warn:
+            self.utils.warn(
+                'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
+                ' or upside down!'.format(
+                    warn
+                )
+            )
+
+    async def process_event(self, event):
+        try:
+
+            self.utils(
+                '\x1b[31;1m-> NEW EVENT FROM {} TYPE "{}" TIME #'.format(
+                    event['updates'][0]['object']['user_id'],
+                    event['updates'][0]['type']
+                ))
+            event_type = event['updates'][0]['type']
+            rule = self.bot.events[event_type]['rule']
+
+            if rule != '=':
+                event_compile = True \
+                    if rule in event['updates'][0]['object'] \
+                    and event['updates'][0]['object'][rule] in self.bot.events[event_type]['equal'] \
+                    else False
+
+                if event_compile:
+                    # [Feature] Async Answers
+                    # Added v0.19#master
+                    ansObject = SynchroAnswer
+                    if self.async_use:
+                        ansObject = AsyncAnswer
+
+                    answer = ansObject.AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
+
+                    self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
+                    # [Feature] Async Use
+                    # Added v0.19#master
+                    if self.async_use:
+                        asyncio.ensure_future(self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer))
+                    else:
+                        self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
+                else:
+                    self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
             else:
-                self.bot.undefined_message_func(answer)
+                # [Feature] Async Answers
+                # Added v0.19#master
+                ansObject = SynchroAnswer
+                if self.async_use:
+                    ansObject = AsyncAnswer
 
-                self.utils(
-                    'New message compile decorator was not found. ' +
-                    'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(
-                        obj['peer_id']
-                    ))
-
-    def process_event(self, event):
-        self.utils(
-            '\x1b[31;1m-> NEW EVENT FROM {} TYPE "{}" TIME #'.format(
-                event['updates'][0]['object']['user_id'],
-                event['updates'][0]['type']
-            ))
-        event_type = event['updates'][0]['type']
-        rule = self.bot.events[event_type]['rule']
-
-        if rule != '=':
-            event_compile = True \
-                if rule in event['updates'][0]['object'] \
-                and event['updates'][0]['object'][rule] in self.bot.events[event_type]['equal'] \
-                else False
-
-            if event_compile:
-                answer = AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
+                answer = ansObject.AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
 
                 self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
-                self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
-            else:
-                self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
-        else:
-            answer = AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
+                # [Feature] Async Use
+                # Added v0.19#master
+                if self.async_use:
+                    asyncio.ensure_future(self.bot.events[event_type]['equal']['='](answer))
+                else:
+                    self.bot.events[event_type]['equal']['='](answer)
 
-            self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
-            self.bot.events[event_type]['equal']['='](answer)
-
-
-class AnswerObject:
-    def __init__(self, method, obj, group_id):
-        self.method = method
-        self.obj = obj
-        self.group_id = group_id
-        self.peer_id = obj['peer_id']
-        self.self_parse = dict(
-            group_id=group_id,
-            peer_id=self.peer_id
-        )
-
-    def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
-                 chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
-                 dont_parse_links=False, disable_mentions=False):
-        message = self.parser(message)
-        request = dict(
-            message=message,
-            keyboard=_keyboard(keyboard) if keyboard is not None else None,
-            attachment=attachment,
-            peer_id=self.peer_id,
-            random_id=randint(1, 2e5),
-            sticker_id=sticker_id,
-            chat_id=chat_id,
-            user_ids=user_ids,
-            lat=lat,
-            long=long,
-            reply_to=reply_to,
-            forward_messages=forward_messages,
-            payload=payload,
-            dont_parse_links=dont_parse_links,
-            disable_mentions=disable_mentions
-        )
-        request = {k: v for k, v in request.items() if v is not None}
-        return self.method('messages', 'send', request)
-
-    def parser(self, message):
-        user_parse = list(set(re.findall(r'{user:\w+}', message)))
-        group_parse = list(set(re.findall(r'{group:\w+}', message)))
-        self_parse = list(set(re.findall(r'{self:\w+}', message)))
-
-        if user_parse:
-            user = self.method('users', 'get', {'user_ids': self.peer_id})[0]
-
-            for parser in user_parse:
-                message = message.replace(
-                    parser, str(user.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
-
-        if group_parse:
-            group = self.method('groups', 'getById', {'group_id': self.group_id})[0]
-
-            for parser in group_parse:
-                message = message.replace(
-                    parser, str(group.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
-
-        if self_parse:
-            self_ = self.self_parse
-
-            for parser in self_parse:
-                message = message.replace(
-                    parser, str(self_.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
-
-        return message
+        except TypeError as warn:
+            self.utils.warn(
+                'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
+                ' or upside down!'.format(
+                    warn
+                )
+            )
 
 
-class AnswerObjectChat:
-    def __init__(self, method, obj, group_id):
-        self.method = method
-        self.obj = obj
-        self.group_id = group_id
-        self.peer_id = obj['peer_id']
-        self.user_id = obj['from_id']
-        self.self_parse = dict(
-            group_id=group_id,
-            user_id=self.user_id,
-            peer_id=self.peer_id
-        )
+class AsyncAnswer:
 
-    def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
-                 chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
-                 dont_parse_links=False, disable_mentions=False):
-        message = self.parser(message)
-        request = dict(
-            message=message,
-            keyboard=_keyboard(keyboard) if keyboard is not None else None,
-            attachment=attachment,
-            peer_id=self.peer_id,
-            random_id=randint(1, 2e5),
-            sticker_id=sticker_id,
-            chat_id=chat_id,
-            user_ids=user_ids,
-            lat=lat,
-            long=long,
-            reply_to=reply_to,
-            forward_messages=forward_messages,
-            payload=payload,
-            dont_parse_links=dont_parse_links,
-            disable_mentions=disable_mentions
-        )
-        request = {k: v for k, v in request.items() if v is not None}
-        return self.method('messages', 'send', request)
+    class AnswerObject:
 
-    def parser(self, message):
-        user_parse = list(set(re.findall(r'{user:\w+}', message)))
-        group_parse = list(set(re.findall(r'{group:\w+}', message)))
-        self_parse = list(set(re.findall(r'{self:\w+}', message)))
+        def __init__(self, method, obj, group_id):
+            self.method = method
+            self.obj = obj
+            self.group_id = group_id
+            self.peer_id = obj['peer_id']
+            self.self_parse = dict(
+                group_id=group_id,
+                peer_id=self.peer_id
+            )
+            # Functions
 
-        if user_parse:
-            user = self.method('users', 'get', {'user_ids': self.user_id})[0]
+        async def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
+                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
+                     dont_parse_links=False, disable_mentions=False):
+            message = await self.parser(message)
+            request = dict(
+                message=message,
+                keyboard=_keyboard(keyboard) if keyboard is not None else None,
+                attachment=attachment,
+                peer_id=self.peer_id,
+                random_id=randint(1, 2e5),
+                sticker_id=sticker_id,
+                chat_id=chat_id,
+                user_ids=user_ids,
+                lat=lat,
+                long=long,
+                reply_to=reply_to,
+                forward_messages=forward_messages,
+                payload=payload,
+                dont_parse_links=dont_parse_links,
+                disable_mentions=disable_mentions
+            )
+            request = {k: v for k, v in request.items() if v is not None}
+            return self.method('messages', 'send', request)
 
-            for parser in user_parse:
-                message = message.replace(
-                    parser, str(user.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+        async def parser(self, message):
+            user_parse = list(set(re.findall(r'{user:\w+}', message)))
+            group_parse = list(set(re.findall(r'{group:\w+}', message)))
+            self_parse = list(set(re.findall(r'{self:\w+}', message)))
 
-        if group_parse:
-            group = self.method('groups', 'getById', {'group_id': self.group_id})[0]
+            if user_parse:
+                user = self.method('users', 'get', {'user_ids': self.peer_id})[0]
 
-            for parser in group_parse:
-                message = message.replace(
-                    parser, str(group.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+                for parser in user_parse:
+                    message = message.replace(
+                        parser, str(user.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
 
-        if self_parse:
-            self_ = self.self_parse
+            if group_parse:
+                group = self.method('groups', 'getById', {'group_id': self.group_id})[0]
 
-            for parser in self_parse:
-                message = message.replace(
-                    parser, str(self_.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+                for parser in group_parse:
+                    message = message.replace(
+                        parser, str(group.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
 
-        return message
+            if self_parse:
+                self_ = self.self_parse
+
+                for parser in self_parse:
+                    message = message.replace(
+                        parser, str(self_.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            return message
+
+    class AnswerObjectChat:
+
+        def __init__(self, method, obj, group_id):
+            self.method = method
+            self.obj = obj
+            self.group_id = group_id
+            self.peer_id = obj['peer_id']
+            self.user_id = obj['from_id']
+            self.self_parse = dict(
+                group_id=group_id,
+                user_id=self.user_id,
+                peer_id=self.peer_id
+            )
+
+        async def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
+                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
+                     dont_parse_links=False, disable_mentions=False):
+            message = await self.parser(message)
+            request = dict(
+                message=message,
+                keyboard=_keyboard(keyboard) if keyboard is not None else None,
+                attachment=attachment,
+                peer_id=self.peer_id,
+                random_id=randint(1, 2e5),
+                sticker_id=sticker_id,
+                chat_id=chat_id,
+                user_ids=user_ids,
+                lat=lat,
+                long=long,
+                reply_to=reply_to,
+                forward_messages=forward_messages,
+                payload=payload,
+                dont_parse_links=dont_parse_links,
+                disable_mentions=disable_mentions
+            )
+            request = {k: v for k, v in request.items() if v is not None}
+            return self.method('messages', 'send', request)
+
+        async def parser(self, message):
+            user_parse = list(set(re.findall(r'{user:\w+}', message)))
+            group_parse = list(set(re.findall(r'{group:\w+}', message)))
+            self_parse = list(set(re.findall(r'{self:\w+}', message)))
+
+            if user_parse:
+                user = self.method('users', 'get', {'user_ids': self.user_id})[0]
+
+                for parser in user_parse:
+                    message = message.replace(
+                        parser, str(user.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            if group_parse:
+                group = self.method('groups', 'getById', {'group_id': self.group_id})[0]
+
+                for parser in group_parse:
+                    message = message.replace(
+                        parser, str(group.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            if self_parse:
+                self_ = self.self_parse
+
+                for parser in self_parse:
+                    message = message.replace(
+                        parser, str(self_.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            return message
+
+
+class SynchroAnswer:
+
+    class AnswerObject:
+
+        def __init__(self, method, obj, group_id):
+            self.method = method
+            self.obj = obj
+            self.group_id = group_id
+            self.peer_id = obj['peer_id']
+            self.self_parse = dict(
+                group_id=group_id,
+                peer_id=self.peer_id
+            )
+            # Functions
+
+        def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
+                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
+                     dont_parse_links=False, disable_mentions=False):
+            message = self.parser(message)
+            request = dict(
+                message=message,
+                keyboard=_keyboard(keyboard) if keyboard is not None else None,
+                attachment=attachment,
+                peer_id=self.peer_id,
+                random_id=randint(1, 2e5),
+                sticker_id=sticker_id,
+                chat_id=chat_id,
+                user_ids=user_ids,
+                lat=lat,
+                long=long,
+                reply_to=reply_to,
+                forward_messages=forward_messages,
+                payload=payload,
+                dont_parse_links=dont_parse_links,
+                disable_mentions=disable_mentions
+            )
+            request = {k: v for k, v in request.items() if v is not None}
+            return self.method('messages', 'send', request)
+
+        def parser(self, message):
+            user_parse = list(set(re.findall(r'{user:\w+}', message)))
+            group_parse = list(set(re.findall(r'{group:\w+}', message)))
+            self_parse = list(set(re.findall(r'{self:\w+}', message)))
+
+            if user_parse:
+                user = self.method('users', 'get', {'user_ids': self.peer_id})[0]
+
+                for parser in user_parse:
+                    message = message.replace(
+                        parser, str(user.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            if group_parse:
+                group = self.method('groups', 'getById', {'group_id': self.group_id})[0]
+
+                for parser in group_parse:
+                    message = message.replace(
+                        parser, str(group.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            if self_parse:
+                self_ = self.self_parse
+
+                for parser in self_parse:
+                    message = message.replace(
+                        parser, str(self_.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            return message
+
+    class AnswerObjectChat:
+
+        def __init__(self, method, obj, group_id):
+            self.method = method
+            self.obj = obj
+            self.group_id = group_id
+            self.peer_id = obj['peer_id']
+            self.user_id = obj['from_id']
+            self.self_parse = dict(
+                group_id=group_id,
+                user_id=self.user_id,
+                peer_id=self.peer_id
+            )
+
+        def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
+                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
+                     dont_parse_links=False, disable_mentions=False):
+            message = self.parser(message)
+            request = dict(
+                message=message,
+                keyboard=_keyboard(keyboard) if keyboard is not None else None,
+                attachment=attachment,
+                peer_id=self.peer_id,
+                random_id=randint(1, 2e5),
+                sticker_id=sticker_id,
+                chat_id=chat_id,
+                user_ids=user_ids,
+                lat=lat,
+                long=long,
+                reply_to=reply_to,
+                forward_messages=forward_messages,
+                payload=payload,
+                dont_parse_links=dont_parse_links,
+                disable_mentions=disable_mentions
+            )
+            request = {k: v for k, v in request.items() if v is not None}
+            return self.method('messages', 'send', request)
+
+        def parser(self, message):
+            user_parse = list(set(re.findall(r'{user:\w+}', message)))
+            group_parse = list(set(re.findall(r'{group:\w+}', message)))
+            self_parse = list(set(re.findall(r'{self:\w+}', message)))
+
+            if user_parse:
+                user = self.method('users', 'get', {'user_ids': self.user_id})[0]
+
+                for parser in user_parse:
+                    message = message.replace(
+                        parser, str(user.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            if group_parse:
+                group = self.method('groups', 'getById', {'group_id': self.group_id})[0]
+
+                for parser in group_parse:
+                    message = message.replace(
+                        parser, str(group.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            if self_parse:
+                self_ = self.self_parse
+
+                for parser in self_parse:
+                    message = message.replace(
+                        parser, str(self_.get(parser[parser.find(':') + 1: parser.find('}')], 'undefined')))
+
+            return message

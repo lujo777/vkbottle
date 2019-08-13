@@ -20,7 +20,7 @@
 
 Давайте создадим простой движок бота
 ```python
-from vkbottle import Bot, MessageAnswer
+from vkbottle import Bot, AnswerObject
 
 bot = Bot(token, group_id, debug=True)
 ```
@@ -44,7 +44,7 @@ def hi(answer):
 ```
 #### @on_message_undefined()
 ```python
-@bot.message_undefined()
+@bot.on_message_undefined()
 def undefined(answer):
     print('Я кого-то не понял..')
 # bot.run()
