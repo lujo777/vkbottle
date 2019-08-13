@@ -213,12 +213,12 @@ class RunBot:
                     # [Feature] Async Use
                     # Added v0.19#master
                     if self.async_use:
-                        asyncio.ensure_future(self.bot.processor_message_chat[text](answer))
+                        asyncio.ensure_future(self.bot.processor_message_chat[text]['call'](answer))
                     else:
                         self.bot.processor_message_chat[text](answer)
                     self.utils(
                         'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                            self.bot.processor_message[text].__name__, obj['peer_id']
+                            self.bot.processor_message_chat[text]['call'].__name__, obj['peer_id']
                         ))
 
         except RuntimeError as warn:

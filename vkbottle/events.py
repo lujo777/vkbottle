@@ -28,6 +28,18 @@ class Events:
             return func
         return decorator
 
+    def on_message_both(self, text):
+        def decorator(func):
+            items = re.findall(r'<\w+>', text)
+            if len(items) == 0:
+                self.processor_message[text] = {'call': func}
+                self.processor_message_chat[text] = {'call': func}
+            else:
+                self.processor_message_regex[regex_message(text)] = {'call': func}
+                self.processor_message_chat_regex[regex_message(text)] = {'call': func}
+            return func
+        return decorator
+
     def on_message_undefined(self):
         def decorator(func):
             self.undefined_message_func = func
