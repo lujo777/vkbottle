@@ -34,8 +34,6 @@ class RunBot:
     def run(self, wait):
         self.utils(
             'Found {} message decorators'.format(
-                    len(self.bot.processor_message.keys()) +
-                    len(self.bot.processor_message_chat.keys()) +
                     len(self.bot.processor_message_regex.keys()) +
                     len(self.bot.processor_message_chat_regex.keys())
             ))
@@ -128,6 +126,15 @@ class RunBot:
                 longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
 
     async def event_processor(self, event):
+        """
+                except KeyError as deprKey:
+            self.utils.error(
+                'LongPoll Parse error with key {}, check that version of your LongPoll is {}'.format(
+                    deprKey,
+                    self.bot.api_version
+                )
+            )
+        """
         try:
             if event['updates']:
                 # If updates more than one
@@ -146,13 +153,7 @@ class RunBot:
                     elif update['type'] in self.bot.events:
                         # For main LongPoll events
                         await self.process_event(event)
-        except KeyError as deprKey:
-            self.utils.error(
-                'LongPoll Parse error with key {}, check that version of your LongPoll is {}'.format(
-                    deprKey,
-                    self.bot.api_version
-                )
-            )
+
         except RuntimeError as warn:
             self.utils.warn(
                 'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
@@ -173,13 +174,15 @@ class RunBot:
                 ansObject = AsyncAnswer
 
             answer = ansObject.AnswerObjectChat(self.method, obj, self.bot.group_id)
-            regex_text = False
+            found = False
+            priorities = sorted(self.bot.processor_message_chat_regex.keys(), key=int, reverse=True)
+            for priority in priorities:
 
-            if self.bot.processor_message_chat_regex != {}:
-
-                for key in self.bot.processor_message_chat_regex:
+                for key in self.bot.processor_message_chat_regex[priority]:
 
                     if key.match(text) is not None:
+                        found = True
+
                         self.utils(
                             '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
                                 obj['peer_id'],
@@ -191,35 +194,23 @@ class RunBot:
                             if self.async_use:
                                 # [Feature] Async Use
                                 # Added v0.19#master
-                                asyncio.ensure_future(self.bot.processor_message_chat_regex[key]['call'](answer, **key.match(text).groupdict()))
+                                asyncio.ensure_future(self.bot.processor_message_chat_regex[priority][key]['call'](answer, **key.match(text).groupdict()))
                             else:
-                                self.bot.processor_message_chat_regex[key]['call'](answer, **key.match(text).groupdict())
+                                self.bot.processor_message_chat_regex[priority][key]['call'](answer, **key.match(text).groupdict())
                         except TypeError:
                             self.utils.error(
                                 'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                    self.bot.processor_message_chat_regex[key]["call"].__name__
-                                ))
-                        else:
-                            self.utils(
-                                'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                                    self.bot.processor_message_chat_regex[key]["call"].__name__, obj['from_id']
+                                    self.bot.processor_message_chat_regex[priority][key]["call"].__name__
                                 ))
                         finally:
-                            regex_text = True
+                            self.utils(
+                                'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                                    self.bot.processor_message_chat_regex[priority][key]["call"].__name__, obj['from_id']
+                                ))
+                            break
 
-            if not regex_text:
-                if text in self.bot.processor_message_chat:
-                    self.utils('\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(obj['peer_id'], obj['text']))
-                    # [Feature] Async Use
-                    # Added v0.19#master
-                    if self.async_use:
-                        asyncio.ensure_future(self.bot.processor_message_chat[text]['call'](answer))
-                    else:
-                        self.bot.processor_message_chat[text](answer)
-                    self.utils(
-                        'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                            self.bot.processor_message_chat[text]['call'].__name__, obj['peer_id']
-                        ))
+                if found:
+                    break
 
         except RuntimeError as warn:
             self.utils.warn(
@@ -249,56 +240,53 @@ class RunBot:
                     obj['text']
                 ))
 
-            if self.bot.processor_message_regex != {}:
+            found = False
+            priorities = sorted(self.bot.processor_message_chat_regex.keys(), key=int, reverse=True)
 
-                for key in self.bot.processor_message_regex:
+            for priority in priorities:
+
+                for key in self.bot.processor_message_regex[priority]:
 
                     if key.match(text) is not None:
+                        found = True
+
                         try:
                             # [Feature] Async Use
                             # Added v0.19#master
                             if self.async_use:
-                                asyncio.ensure_future(self.bot.processor_message_regex[key]['call'](answer, **key.match(text).groupdict()))
+                                asyncio.ensure_future(self.bot.processor_message_regex[priority][key]['call'](answer, **key.match(text).groupdict()))
                             else:
-                                self.bot.processor_message_regex[key]['call'](answer, **key.match(text).groupdict())
+                                self.bot.processor_message_regex[priority][key]['call'](answer, **key.match(text).groupdict())
                         except TypeError:
                             self.utils.error(
                                 'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                    self.bot.processor_message_regex[key]["call"].__name__
+                                    self.bot.processor_message_regex[priority][key]["call"].__name__
                                 )
                             )
                         finally:
-                            regex_text = True
+                            self.utils(
+                                'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                                    self.bot.processor_message_regex[priority][key]['call'].__name__, obj['peer_id']
+                                ))
+                            break
 
-            if not regex_text:
-                if text in self.bot.processor_message:
-                    # [Feature] Async Use
-                    # Added v0.19#master
-                    if self.async_use:
-                        asyncio.ensure_future(self.bot.processor_message[text]['call'](answer))
-                    else:
-                        self.bot.processor_message[text]['call'](answer)
+                if found:
+                    break
 
-                    self.utils(
-                        'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                            self.bot.processor_message[text]['call'].__name__, obj['peer_id']
-                        ))
-                else:
-                    # [Feature] Async Use
-                    # Added v0.19#master
-                    if self.async_use:
-                        if isinstance(self.bot.undefined_message_func, types.FunctionType):
-                            asyncio.ensure_future(self.bot.undefined_message_func(answer))
-                        else:
-                            self.bot.undefined_message_func(answer)
+            if not found:
+                if self.async_use:
+                    if isinstance(self.bot.undefined_message_func, types.FunctionType):
+                        asyncio.ensure_future(self.bot.undefined_message_func(answer))
                     else:
                         self.bot.undefined_message_func(answer)
+                else:
+                    self.bot.undefined_message_func(answer)
 
-                    self.utils(
-                        'New message compile decorator was not found. ' +
-                        'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(
-                            obj['peer_id']
-                        ))
+                self.utils(
+                    'New message compile decorator was not found. ' +
+                    'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(
+                        obj['peer_id']
+                    ))
 
         except TypeError as warn:
             self.utils.warn(

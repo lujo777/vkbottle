@@ -67,7 +67,12 @@ def hi(answer):
 # bot.run()
 ```
 
-* decorators can be merged
+* decorators can be combined 
+
+Argument | Description
+-------- | -----------
+text | Text which will approve the decorator condition (**str**)
+priority | Set the decorator priority. Default to 0 (**int**)
 
 How to use **answer**?
 There're a lot of supported methods:
