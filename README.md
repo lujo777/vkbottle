@@ -23,7 +23,7 @@ To install use terminal command:
 ## Usage
 Lets create a simple bot engine
 ```python
-from vkbottle import Bot, MessageAnswer
+from vkbottle import Bot, AnswerObject
 
 bot = Bot(token, group_id, debug=True)
 ```
@@ -43,7 +43,7 @@ Now we should import our event-files like this: `import events` with `bot.run()`
 @bot.on_message('hi!')
 def hi(answer):
     print('Somebody wrote me "hi!"!')
-# bot.run()
+# if __name__ == '__main__': bot.run()
 ```
 #### @on_message_chat(text)
 ```python
@@ -54,10 +54,10 @@ def hi(answer):
 ```
 #### @on_message_undefined()
 ```python
-@bot.message_undefined()
+@bot.on_message_undefined()
 def undefined(answer):
     print('I cannot understand somebody')
-# bot.run()
+# if __name__ == '__main__': bot.run()
 ```
 #### @on_message_both(text)
 ```python
