@@ -50,7 +50,7 @@ def hi(answer):
 @bot.on_message_chat('hi!')
 def hi(answer):
     print('Somebody wrote me "hi!" in chat!')
-# bot.run()
+# if __name__ == '__main__': bot.run()
 ```
 #### @on_message_undefined()
 ```python
@@ -64,7 +64,7 @@ def undefined(answer):
 @bot.on_message_both('hi!')
 def hi(answer):
     print('Somebody wrote me "hi!" in chat or in private!')
-# bot.run()
+# if __name__ == '__main__': bot.run()
 ```
 
 * decorators can be combined 
@@ -90,6 +90,19 @@ def itz_cat(answer):
 ```
 Answer is messages.send method without peer_id, it completes automatically
 
+### Decorator @on_chat_action(action)
+
+Actions are events like chat join or chat leave:
+```python
+@bot.on_chat_action('chat_kick_user')
+def kick_or_leave(answer):
+    if answer.obj['action']['member_id'] != answer.user_id:
+        answer('This little trap was kicked from the conversation')
+    else:
+        answer('Oh no.. Somebody left the conversation!')
+```
+Action documentation you can find on [VK Api/Message Obj/action](https://vk.com/dev/objects/message)
+
 ### Keys
 
 If you need it, you can add simple keys to your decorators like this:  
@@ -106,7 +119,7 @@ It is supported in chat-decorators too
 To use async in your plugins just make `async_use` to True and all your events and messages functions to async:
 ```python
 @bot.on_message('how are you')
-def how_are_you(answer):
+async def how_are_you(answer):
     await answer('I\'m in the golden age of grotesque!')
     # answer calling should be in await expression
 ```
@@ -122,7 +135,7 @@ Let's make a simple keyboard using VKBottle Keyboard Generator:
 ```
 Keyboard:  
 {button1}{button2}  
-{-------button3-----}  
+{------button3----}  
 
 Keyboard options for a button:  
 

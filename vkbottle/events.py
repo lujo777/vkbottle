@@ -15,12 +15,19 @@ class Events:
         lambda *args: Utils(True).warn('Add to your on-message file an on-message-undefined decorator')
     )
     events = {}
+    chat_action_types = {}
 
     def on_message(self, text, priority: int = 0):
         def decorator(func):
             if priority not in self.processor_message_regex:
                 self.processor_message_regex[priority] = {}
             self.processor_message_regex[priority][regex_message(text)] = {'call': func}
+            return func
+        return decorator
+
+    def on_chat_action(self, type_):
+        def decorator(func):
+            self.chat_action_types[type_] = {'call': func}
             return func
         return decorator
 
@@ -88,3 +95,4 @@ class Events:
             self.events[event] = {'rule': '=', 'equal': {'=': func}}
             return func
         return decorator
+
