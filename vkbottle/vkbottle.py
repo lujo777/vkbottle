@@ -9,9 +9,15 @@ from .methods import Method
 from random import randint
 
 import re
+
 import requests
+
 import types
+
 import asyncio
+
+
+VERSION_PORTABLE = 'https://raw.githubusercontent.com/timoniq/vkbottle/master/portable/PORTABLE.json'
 
 
 # Bot Universal Class
@@ -21,8 +27,21 @@ class RunBot:
         self.bot = bot
         self.url = 'https://api.vk.com/method/'
         self.async_use = async_use
-
         self.utils = Utils(self.bot.debug)
+
+        # [Feature] Newest VKBottle version checkup
+        # Added v0.19 # master
+        actual_portable = requests.get(VERSION_PORTABLE).json()
+        if actual_portable['version'] != self.bot.version:
+            self.utils(
+                'Newer version of VKBottle available ({})! '
+                'Install it using \x1b[93;1mpip install vkbottle --upgrade\x1b[0m'.format(
+                    actual_portable['version']
+                )
+            )
+        else:
+            self.utils('You are using the newest version of VKBottle')
+
         self.utils('Bot <{}> was authorised successfully'.format(self.bot.group_id))
         self.utils(
             'Module completed. MODULE USING LONGPOLL VERSION {}'.format(
@@ -151,8 +170,13 @@ class RunBot:
                             # For private messages
                             await self.process_message(obj['text'], obj)
                         else:
-                            # For chat messages
-                            await self.process_message_chat(obj['text'], obj)
+                            # [Action Support] Actions in chat return to the @on_chat_action decorator
+                            if 'action' in obj:
+                                # For actions
+                                await self.process_chat_action(obj)
+                            else:
+                                # For chat messages
+                                await self.process_message_chat(obj['text'], obj)
 
                     elif update['type'] in self.bot.events:
                         # For main LongPoll events
@@ -359,6 +383,39 @@ class RunBot:
                 )
             )
 
+    async def process_chat_action(self, obj):
+        action = obj['action']
+        if action['type'] in self.bot.chat_action_types:
+
+            self.utils(
+                '\x1b[31;1m-> NEW EVENT FROM CHAT {} TYPE "{}" TIME #'.format(
+                    obj['peer_id'],
+                    action['type'].upper()
+                ))
+
+            # [Feature] Async Answers
+            # Added v0.19#master
+            ansObject = SynchroAnswer
+            if self.async_use:
+                ansObject = AsyncAnswer
+
+            answer = ansObject.AnswerObjectChat(self.method, obj, self.bot.group_id)
+
+            # [Feature] Async Use
+            # Added v0.19#master
+            if self.async_use:
+                asyncio.ensure_future(self.bot.chat_action_types[action['type']]['call'](answer))
+            else:
+                self.bot.chat_action_types[action['type']]['call'](answer)
+
+            self.utils(
+                'NEW ON-CHAT-ACTION EVENT WAS COMPILED >> '
+                'Compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                    self.bot.chat_action_types[action['type']]['call'].__name__,
+                    obj['from_id']
+                ))
+
+
 
 class AsyncAnswer:
 
@@ -370,6 +427,7 @@ class AsyncAnswer:
             self.group_id = group_id
             self.peer_id = obj['peer_id']
             self.user_id = self.peer_id
+            self.message = obj['text']
             self.self_parse = dict(
                 group_id=group_id,
                 peer_id=self.peer_id
@@ -436,6 +494,7 @@ class AsyncAnswer:
             self.group_id = group_id
             self.peer_id = obj['peer_id']
             self.user_id = obj['from_id']
+            self.message = obj['text']
             self.self_parse = dict(
                 group_id=group_id,
                 user_id=self.user_id,
@@ -505,6 +564,7 @@ class SynchroAnswer:
             self.group_id = group_id
             self.peer_id = obj['peer_id']
             self.user_id = self.peer_id
+            self.message = obj['text']
             self.self_parse = dict(
                 group_id=group_id,
                 peer_id=self.peer_id
@@ -569,6 +629,7 @@ class SynchroAnswer:
             self.method = method
             self.obj = obj
             self.group_id = group_id
+            self.message = obj['text']
             self.peer_id = obj['peer_id']
             self.user_id = obj['from_id']
             self.self_parse = dict(

@@ -12,8 +12,8 @@ from .vkbottle import RunBot
 
 from .exceptions import *
 
-__version__ = '0.13'  # Package VKBottle version
 
+__version__ = '0.13'  # Package VKBottle version
 
 __api_version__ = 5.101  # VK Api version
 
@@ -23,6 +23,7 @@ class Bot(Events):
     def __init__(self, token, group_id, debug=False, async_use=False, **deprecated):
         self.__token = token
         self.api_version = __api_version__
+        self.version = __version__
         self.url = 'https://api.vk.com/method/'
         self.group_id = group_id
         self.async_use = async_use
