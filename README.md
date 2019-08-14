@@ -50,7 +50,7 @@ def hi(answer):
 @bot.on_message_chat('hi!')
 def hi(answer):
     print('Somebody wrote me "hi!" in chat!')
-# bot.run()
+# if __name__ == '__main__': bot.run()
 ```
 #### @on_message_undefined()
 ```python
@@ -64,7 +64,7 @@ def undefined(answer):
 @bot.on_message_both('hi!')
 def hi(answer):
     print('Somebody wrote me "hi!" in chat or in private!')
-# bot.run()
+# if __name__ == '__main__': bot.run()
 ```
 
 * decorators can be combined 

@@ -1,7 +1,6 @@
 import vkbottle
-import setuptools
+from setuptools import setup, find_packages
 
-from distutils.core import setup
 setup(
   name='vkbottle',
   packages=['vkbottle'],
@@ -13,12 +12,9 @@ setup(
   url='https://github.com/timoniq/vkbottle',
   long_description=open('README.md', encoding='utf-8').read(),
   long_description_content_type='text/markdown',
-  download_url='https://github.com/timoniq/vkbottle/archive/v' + __version__ + '.tar.gz',
-  keywords=['vk', 'vkontakte', 'vk-api', 'vk-bot', 'vkbottle', 'vk-bottle'],
-  install_requires=[
-    'requests',
-    'six'
-  ],
+  download_url='https://github.com/timoniq/vkbottle/archive/v' + vkbottle.__version__ + '.tar.gz',
+  keywords='vk vkontakte vk-api vk-bot vkbottle vk-bottle',
+  install_requires=['requests>=2.2', 'six'],
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
