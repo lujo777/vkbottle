@@ -9,9 +9,15 @@ from .methods import Method
 from random import randint
 
 import re
+
 import requests
+
 import types
+
 import asyncio
+
+
+VERSION_PORTABLE = 'https://raw.githubusercontent.com/timoniq/vkbottle/master/portable/PORTABLE.json'
 
 
 # Bot Universal Class
@@ -21,8 +27,21 @@ class RunBot:
         self.bot = bot
         self.url = 'https://api.vk.com/method/'
         self.async_use = async_use
-
         self.utils = Utils(self.bot.debug)
+
+        # [Feature] Newest VKBottle version checkup
+        # Added v0.19 # master
+        actual_portable = requests.get(VERSION_PORTABLE).json()
+        if actual_portable['version'] != self.bot.version:
+            self.utils(
+                'Newer version of VKBottle available ({})! '
+                'Install it using \x1b[93;1mpip install vkbottle --upgrade\x1b[0m'.format(
+                    actual_portable['version']
+                )
+            )
+        else:
+            self.utils('You are using the newest version of VKBottle')
+
         self.utils('Bot <{}> was authorised successfully'.format(self.bot.group_id))
         self.utils(
             'Module completed. MODULE USING LONGPOLL VERSION {}'.format(
