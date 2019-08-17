@@ -202,10 +202,10 @@ class RunBot:
 
             answer = ansObject.AnswerObjectChat(self.method, obj, self.bot.group_id)
             found = False
-            priorities = sorted(self.bot.processor_message_chat_regex.keys(), key=int, reverse=True)
+            priorities = sorted(self.bot.on_message_chat.processor.keys(), key=int, reverse=True)
             for priority in priorities:
 
-                for key in self.bot.processor_message_chat_regex[priority]:
+                for key in self.bot.on_message_chat.processor[priority]:
 
                     if key.match(text) is not None:
                         found = True
@@ -221,18 +221,18 @@ class RunBot:
                             if self.async_use:
                                 # [Feature] Async Use
                                 # Added v0.19#master
-                                asyncio.ensure_future(self.bot.processor_message_chat_regex[priority][key]['call'](answer, **key.match(text).groupdict()))
+                                asyncio.ensure_future(self.bot.on_message_chat.processor[priority][key]['call'](answer, **key.match(text).groupdict()))
                             else:
-                                self.bot.processor_message_chat_regex[priority][key]['call'](answer, **key.match(text).groupdict())
+                                self.bot.on_message_chat.processor[priority][key]['call'](answer, **key.match(text).groupdict())
                         except TypeError:
                             self.utils.error(
                                 'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                    self.bot.processor_message_chat_regex[priority][key]["call"].__name__
+                                    self.bot.on_message_chat.processor[priority][key]["call"].__name__
                                 ))
                         finally:
                             self.utils(
                                 'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                                    self.bot.processor_message_chat_regex[priority][key]["call"].__name__, obj['from_id']
+                                    self.bot.on_message_chat.processor[priority][key]["call"].__name__, obj['from_id']
                                 ))
                             break
 
@@ -268,11 +268,11 @@ class RunBot:
                 ))
 
             found = False
-            priorities = sorted(self.bot.processor_message_chat_regex.keys(), key=int, reverse=True)
+            priorities = sorted(self.bot.on_message.processor.keys(), key=int, reverse=True)
 
             for priority in priorities:
 
-                for key in self.bot.processor_message_regex[priority]:
+                for key in self.bot.on_message.processor[priority]:
 
                     if key.match(text) is not None:
                         found = True
@@ -281,19 +281,19 @@ class RunBot:
                             # [Feature] Async Use
                             # Added v0.19#master
                             if self.async_use:
-                                asyncio.ensure_future(self.bot.processor_message_regex[priority][key]['call'](answer, **key.match(text).groupdict()))
+                                asyncio.ensure_future(self.bot.on_message.processor[priority][key]['call'](answer, **key.match(text).groupdict()))
                             else:
-                                self.bot.processor_message_regex[priority][key]['call'](answer, **key.match(text).groupdict())
+                                self.bot.on_message.processor[priority][key]['call'](answer, **key.match(text).groupdict())
                         except TypeError:
                             self.utils.error(
                                 'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                    self.bot.processor_message_regex[priority][key]["call"].__name__
+                                    self.bot.on_message.processor[priority][key]["call"].__name__
                                 )
                             )
                         finally:
                             self.utils(
                                 'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                                    self.bot.processor_message_regex[priority][key]['call'].__name__, obj['peer_id']
+                                    self.bot.on_message.processor[priority][key]['call'].__name__, obj['peer_id']
                                 ))
                             break
 

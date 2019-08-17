@@ -8,10 +8,12 @@ from .methods import Api
 
 from .keyboard import _keyboard
 
-from .vkbottle import RunBot
+from .vkbottle import RunBot, SynchroAnswer
 
 from .exceptions import *
 
+
+AnswerObject = SynchroAnswer.AnswerObject
 
 __version__ = '0.13'  # Package VKBottle version
 
