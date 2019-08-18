@@ -1,6 +1,6 @@
 import re
 import time
-
+import json
 
 class Utils:
     """Coloring class, engine of all debug messages and warns
@@ -15,6 +15,12 @@ class Utils:
     def warn(self, text):
         if self.debug is True:
             print("[\x1b[34mVK Bottle WARN\x1b[0m] \x1b[93;1m" + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), text) + "\x1b[0m")
+
+    def sjson_dumps(*args, **kwargs):
+        kwargs['ensure_ascii'] = False
+        kwargs['separators'] = (',', ':')
+
+        return json.dumps(*args, **kwargs)
 
     @staticmethod
     def error(text):
