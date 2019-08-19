@@ -235,3 +235,7 @@ debug | Should VKBottle escape debugging messages. Default to False (**bool**)
 user_api = user.api
 user_api.messages.send(peer_id=1, message='Hello my colleague!', random_id=100)
 ```
+
+## Plugins (v0.20#master)
+
+Check docs/EN-PLUGINS.md for plugin docs

@@ -6,15 +6,11 @@ from .methods import Method
 
 from .path_loader import *
 
-from .tools import dict_of_dicts_merge
-
 from random import randint
 
 import re
 
 import requests
-
-import types
 
 import asyncio
 
@@ -24,15 +20,16 @@ import os
 VERSION_PORTABLE = 'https://raw.githubusercontent.com/timoniq/vkbottle/master/portable/PORTABLE.json'
 
 
-def checkup_plugins(utils):
-    if not os.path.exists('plugins'):
-        os.mkdir('plugins')
-        utils('Plugins Folder was created')
+def checkup_plugins(plugin_folder, utils: Utils):
+    if not os.path.exists(plugin_folder):
+        os.mkdir(plugin_folder)
+        utils('Plugin Folder was created, PATH "{}"'.format(plugin_folder))
 
 
 # Bot Universal Class
 class RunBot:
     def __init__(self, bot, token, async_use=False):
+
         self._token = token
         self.bot = bot
 
@@ -58,15 +55,19 @@ class RunBot:
 
         self.utils('Bot <\x1b[35m{}\x1b[0m> was authorised successfully'.format(self.bot.group_id))
 
-        checkup_plugins(self.utils)
-        self.plugins = load_plugins('plugins', self.utils)
+        # [Support] Plugin Support
+        # Added v0.20#master
+        checkup_plugins(self.bot.plugin_folder, self.utils)
+        self.plugins = load_plugins(self.bot.plugin_folder, self.utils)
 
         self.utils(
             'Module completed. MODULE USING LONGPOLL VERSION {}'.format(
                 self.bot.api_version
             )
             )
+
         # Deprecated names
+        # Added v0.18#master
         if 'asyncio' in self.bot.deprecated:
             self.utils.warn('Name \'asyncio\' is now deprecated. Use name \'async_use\' and read the docs at')
         self.method = Method(token, self.url, self.bot.api_version)
@@ -90,6 +91,8 @@ class RunBot:
         self.bot.on.get_message()
         self.bot.on.get_message_chat()
 
+        # [Support] Plugin Support
+        # Added v0.20#master
         self.utils('Merging plugins..')
         for plugin in self.plugins:
             self.bot.on.append_plugin(plugin)
@@ -182,15 +185,6 @@ class RunBot:
                 longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
 
     async def event_processor(self, event):
-        """
-        except KeyError as deprKey:
-            self.utils.error(
-                'LongPoll Parse error with key {}, check that version of your LongPoll is {}'.format(
-                    deprKey,
-                    self.bot.api_version
-            )
-        )
-        """
         try:
             if event['updates']:
                 # If updates more than one
@@ -211,7 +205,7 @@ class RunBot:
                                 # For chat messages
                                 await self.process_message_chat(obj['text'], obj)
 
-                    elif update['type'] in self.bot.events:
+                    elif update['type'] in self.bot.on.events:
                         # For main LongPoll events
                         await self.process_event(event)
 
@@ -237,7 +231,8 @@ class RunBot:
             found = False
             plugin_priorities = sorted(self.bot.on.processor_message_chat_regex.keys(), key=int, reverse=True)
             for plugin_priority in plugin_priorities:
-                priorities = sorted(self.bot.on.processor_message_chat_regex[plugin_priority].keys(), key=int, reverse=True)
+                priorities = sorted(self.bot.on.processor_message_chat_regex[plugin_priority].keys(),
+                                    key=int, reverse=True)
                 for priority in priorities:
 
                     for key in self.bot.on.processor_message_chat_regex[plugin_priority][priority]:
@@ -256,18 +251,28 @@ class RunBot:
                                 if self.async_use:
                                     # [Feature] Async Use
                                     # Added v0.19#master
-                                    asyncio.ensure_future(self.bot.on.processor_message_chat_regex[plugin_priority][priority][key](answer, **key.match(text).groupdict()))
+                                    asyncio.ensure_future(
+                                        self.bot.on.processor_message_chat_regex[plugin_priority][priority][key](
+                                            answer, **key.match(text).groupdict()
+                                        )
+                                    )
                                 else:
-                                    self.bot.on.processor_message_chat_regex[plugin_priority][priority][key](answer, **key.match(text).groupdict())
+                                    self.bot.on.processor_message_chat_regex[plugin_priority][priority][key](
+                                        answer,
+                                        **key.match(text).groupdict()
+                                    )
                             except TypeError:
                                 self.utils.error(
                                     'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                        self.bot.on.processor_message_chat_regex[plugin_priority][priority][key].__name__
+                                        self.bot.on.processor_message_chat_regex
+                                        [plugin_priority][priority][key].__name__
                                     ))
                             finally:
                                 self.utils(
                                     'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                                        self.bot.on.processor_message_chat_regex[plugin_priority][priority][key].__name__, obj['from_id']
+                                        self.bot.on.processor_message_chat_regex
+                                        [plugin_priority][priority][key].__name__,
+                                        obj['from_id']
                                     ))
                                 break
 
@@ -322,9 +327,18 @@ class RunBot:
                                 # [Feature] Async Use
                                 # Added v0.19#master
                                 if self.async_use:
-                                    asyncio.ensure_future(self.bot.on.processor_message_regex[plugin_priority][priority][key](answer, **key.match(text).groupdict()))
+                                    asyncio.ensure_future(
+                                        self.bot.on.processor_message_regex
+                                        [plugin_priority][priority][key](
+                                            answer,
+                                            **key.match(text).groupdict()
+                                        )
+                                    )
                                 else:
-                                    self.bot.on.processor_message_regex[plugin_priority][priority][key](answer, **key.match(text).groupdict())
+                                    self.bot.on.processor_message_regex[plugin_priority][priority][key](
+                                        answer,
+                                        **key.match(text).groupdict()
+                                    )
                             except TypeError:
                                 self.utils.error(
                                     'ADD TO {} FUNCTION REQUIRED ARGS'.format(
@@ -334,8 +348,10 @@ class RunBot:
                             finally:
                                 self.utils(
                                     'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                                        self.bot.on.processor_message_regex[plugin_priority][priority][key].__name__, obj['peer_id']
-                                    ))
+                                        self.bot.on.processor_message_regex[plugin_priority][priority][key].__name__,
+                                        obj['peer_id']
+                                    )
+                                )
                                 break
 
                     if found:
@@ -343,12 +359,13 @@ class RunBot:
 
             if not found:
                 if self.async_use:
-                    if isinstance(self.bot.on.undefined_message_func, types.FunctionType):
+                    if not self.bot.on.undefined_message_func.__name__ == '<lambda>':
                         asyncio.ensure_future(self.bot.on.undefined_message_func(answer))
                     else:
                         self.bot.on.undefined_message_func(answer)
                 else:
                     self.bot.on.undefined_message_func(answer)
+
 
                 self.utils(
                     'New message compile decorator was not found. ' +
@@ -366,6 +383,7 @@ class RunBot:
 
     async def process_event(self, event):
         try:
+            print(event)
 
             self.utils(
                 '\x1b[31;1m-> NEW EVENT FROM {} TYPE "{}" TIME #'.format(
@@ -373,12 +391,12 @@ class RunBot:
                     event['updates'][0]['type']
                 ))
             event_type = event['updates'][0]['type']
-            rule = self.bot.events[event_type]['rule']
+            rule = self.bot.on.events[event_type]['rule']
 
             if rule != '=':
                 event_compile = True \
                     if rule in event['updates'][0]['object'] \
-                    and event['updates'][0]['object'][rule] in self.bot.events[event_type]['equal'] \
+                    and event['updates'][0]['object'][rule] in self.bot.on.events[event_type]['equal'] \
                     else False
 
                 if event_compile:
@@ -394,9 +412,11 @@ class RunBot:
                     # [Feature] Async Use
                     # Added v0.19#master
                     if self.async_use:
-                        asyncio.ensure_future(self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer))
+                        asyncio.ensure_future(
+                            self.bot.on.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
+                        )
                     else:
-                        self.bot.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
+                        self.bot.on.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
                 else:
                     self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
             else:
@@ -412,9 +432,9 @@ class RunBot:
                 # [Feature] Async Use
                 # Added v0.19#master
                 if self.async_use:
-                    asyncio.ensure_future(self.bot.events[event_type]['equal']['='](answer))
+                    asyncio.ensure_future(self.bot.on.events[event_type]['equal']['='](answer))
                 else:
-                    self.bot.events[event_type]['equal']['='](answer)
+                    self.bot.on.events[event_type]['equal']['='](answer)
 
         except TypeError as warn:
             self.utils.warn(
@@ -457,7 +477,6 @@ class RunBot:
                 ))
 
 
-
 class AsyncAnswer:
 
     class AnswerObject:
@@ -466,9 +485,9 @@ class AsyncAnswer:
             self.method = method
             self.obj = obj
             self.group_id = group_id
-            self.peer_id = obj['peer_id']
+            self.peer_id = obj['peer_id'] if 'peer_id' in obj else obj['user_id']
             self.user_id = self.peer_id
-            self.message = obj['text']
+            self.message = obj['text'] if 'text' in obj else ''
             self.self_parse = dict(
                 group_id=group_id,
                 peer_id=self.peer_id
@@ -476,8 +495,8 @@ class AsyncAnswer:
             # Functions
 
         async def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
-                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
-                     dont_parse_links=False, disable_mentions=False):
+                           chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None,
+                           payload=None, dont_parse_links=False, disable_mentions=False):
             message = await self.parser(message)
             request = dict(
                 message=message,
@@ -543,8 +562,8 @@ class AsyncAnswer:
             )
 
         async def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
-                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
-                     dont_parse_links=False, disable_mentions=False):
+                           chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None,
+                           payload=None, dont_parse_links=False, disable_mentions=False):
             message = await self.parser(message)
             request = dict(
                 message=message,
@@ -613,8 +632,8 @@ class SynchroAnswer:
             # Functions
 
         def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
-                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
-                     dont_parse_links=False, disable_mentions=False):
+                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None,
+                     payload=None, dont_parse_links=False, disable_mentions=False):
             message = self.parser(message)
             request = dict(
                 message=message,
@@ -680,8 +699,8 @@ class SynchroAnswer:
             )
 
         def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
-                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None, payload=None,
-                     dont_parse_links=False, disable_mentions=False):
+                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None,
+                     payload=None, dont_parse_links=False, disable_mentions=False):
             message = self.parser(message)
             request = dict(
                 message=message,

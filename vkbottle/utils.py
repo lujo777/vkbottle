@@ -2,6 +2,7 @@ import re
 import time
 import json
 
+
 class Utils:
     """Coloring class, engine of all debug messages and warns
     """
@@ -41,8 +42,7 @@ class Utils:
                 new += separator
         print("[\x1b[34mVK Bottle CRITICAL ERROR\x1b[0m] \x1b[31;1m" + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + "\x1b[0m")
 
-    @staticmethod
-    def progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
+    def progress_bar(self, iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
         """
         Call in a loop to create terminal progress bar
         @params:
@@ -54,12 +54,13 @@ class Utils:
             length      - Optional  : character length of bar (Int)
             fill        - Optional  : bar fill character (Str)
         """
-        prefix = "[\x1b[34mVK Bottle\x1b[0m] " + prefix
-        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-        filledLength = int(length * iteration // total)
-        bar = fill * filledLength + '-' * (length - filledLength)
+        if self.debug is True:
+            prefix = "[\x1b[34mVK Bottle\x1b[0m] " + prefix
+            percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+            filledLength = int(length * iteration // total)
+            bar = fill * filledLength + '-' * (length - filledLength)
 
-        print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end='\r')
-        # Print New Line on Complete
-        if iteration == total:
-            print()
+            print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end='\r')
+            # Print New Line on Complete
+            if iteration == total:
+                print()

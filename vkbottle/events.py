@@ -172,6 +172,8 @@ class Events:
     def append_plugin(self, plugin):
         self.processor_message_regex = plugin.on.processor_message_regex
         self.processor_message_chat_regex = plugin.on.processor_message_chat_regex
+        self.events = plugin.on.events
+        self.chat_action_types = plugin.on.chat_action_types
 
     def chat_action(self, type_):
         def decorator(func):

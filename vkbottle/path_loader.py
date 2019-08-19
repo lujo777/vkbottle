@@ -38,7 +38,7 @@ def load_plugins(folder, utils: Utils):
     if len(os.listdir(folder)) > 0:
 
         # [Feature] Progress Bar
-        utils.progress_bar(0, len(os.listdir(folder)), prefix='Downloading your plugins:',
+        utils.progress_bar(0, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
                            suffix='Complete', length=50)
 
         for i, name in enumerate(os.listdir(folder)):
@@ -54,14 +54,14 @@ def load_plugins(folder, utils: Utils):
             time.sleep(0.05)
 
             # Update Progress Bar
-            utils.progress_bar(i + 1, len(os.listdir(folder)), prefix='Downloading your plugins:',
+            utils.progress_bar(i + 1, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
                                suffix='Complete', length=50)
 
     utils('Found {} Plugins in \x1b[93;1m{}\x1b[0m{}'.format(
         len(plugins_list),
         os.path.dirname(path),
         ':' if len(plugins_list) > 0 else ''),
-        *[plugin.name + (' (' + str(plugin.description) + ')' if plugin.description is not None else '') for plugin in plugins_list], separator='\n \u25CF ',
+        *[plugin.name + (' \x1b[37m(' + str(plugin.description) + ')\x1b[0m' if plugin.description is not None else '') for plugin in plugins_list], separator='\n \u25CF ',
     )
 
     return plugins_list
