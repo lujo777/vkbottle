@@ -4,12 +4,12 @@ bot = Bot('my-token', 1, debug=True)
 admin_id = 1  # VK Group admin ID
 
 
-@bot.on_message_undefined()
+@bot.on.message_undefined()
 def who_i_am(answer):
     answer('I work only in chats')
 
 
-@bot.on_message_chat('bot')
+@bot.on.message_chat('bot')
 def i_am_here(answer):
     answer('[id{user:id}|{user:first_name}], i am here!')
 

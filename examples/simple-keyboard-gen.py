@@ -4,7 +4,7 @@ bot = Bot('my-token', 1, debug=True, asyncio=True)
 admin_id = 1  # VK Group admin ID
 
 
-@bot.on_message('dobby show keyboard')
+@bot.on.message('dobby show keyboard')
 def keyboard(answer):
     answer('Ok guurls take ur bibs!',
            keyboard=[
@@ -13,7 +13,7 @@ def keyboard(answer):
            ])
 
 
-@bot.on_message('dobby skip it')
+@bot.on.message('dobby skip it')
 def keyboard_skip(answer):
     answer('Ok..',
            keyboard=[]  # This keyboard is empty!
