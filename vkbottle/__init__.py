@@ -21,7 +21,7 @@ __api_version__ = 5.101  # VK Api version
 
 
 # Main Bot Auth
-class Bot(Events):
+class Bot:
     def __init__(self, token, group_id, debug=False, async_use=False, **deprecated):
         self.__token = token
         self.api_version = __api_version__
@@ -33,6 +33,8 @@ class Bot(Events):
         self.deprecated = deprecated
         # Api Usage
         self.api = Api(token, self.url, self.api_version)
+        # Events
+        self.on = Events()
 
     def run(self, wait=25):
         run_bot = RunBot(self, self.__token, self.async_use)

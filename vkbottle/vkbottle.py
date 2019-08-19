@@ -1,10 +1,12 @@
 from .jsontype import json_type_utils
 
-from .utils import Utils
-
 from .keyboard import _keyboard
 
 from .methods import Method
+
+from .path_loader import *
+
+from .tools import dict_of_dicts_merge
 
 from random import randint
 
@@ -16,8 +18,16 @@ import types
 
 import asyncio
 
+import os
+
 
 VERSION_PORTABLE = 'https://raw.githubusercontent.com/timoniq/vkbottle/master/portable/PORTABLE.json'
+
+
+def checkup_plugins(utils):
+    if not os.path.exists('plugins'):
+        os.mkdir('plugins')
+        utils('Plugins Folder was created')
 
 
 # Bot Universal Class
@@ -25,12 +35,16 @@ class RunBot:
     def __init__(self, bot, token, async_use=False):
         self._token = token
         self.bot = bot
+
+        # Set the default plugin priority for __name__ == "__main__" bot run
+        self.bot.on(0)
+
         self.url = 'https://api.vk.com/method/'
         self.async_use = async_use
         self.utils = Utils(self.bot.debug)
 
         # [Feature] Newest VKBottle version checkup
-        # Added v0.19 # master
+        # Added v0.19#master
         actual_portable = requests.get(VERSION_PORTABLE).json()
         if actual_portable['version'] != self.bot.version:
             self.utils(
@@ -42,7 +56,11 @@ class RunBot:
         else:
             self.utils('You are using the newest version of VKBottle')
 
-        self.utils('Bot <{}> was authorised successfully'.format(self.bot.group_id))
+        self.utils('Bot <\x1b[35m{}\x1b[0m> was authorised successfully'.format(self.bot.group_id))
+
+        checkup_plugins(self.utils)
+        self.plugins = load_plugins('plugins', self.utils)
+
         self.utils(
             'Module completed. MODULE USING LONGPOLL VERSION {}'.format(
                 self.bot.api_version
@@ -55,16 +73,26 @@ class RunBot:
         self._loop = asyncio.get_event_loop
 
     def run(self, wait):
+
         self.utils(
             'Found {} message decorators'.format(
-                    len(self.bot.processor_message_regex.keys()) +
-                    len(self.bot.processor_message_chat_regex.keys())
+                    len(self.bot.on.processor_message_regex.keys()) +
+                    len(self.bot.on.processor_message_chat_regex.keys())
             ))
         self.utils(json_type_utils())
 
         # [Feature] If LongPoll is not enabled in the group it automatically stops
         # Added v0.19#master
         longPollEnabled = self.method('groups', 'getLongPollSettings', {'group_id': self.bot.group_id})['is_enabled']
+
+        # [Feature] Update messages dictionaries
+        # Added v0.20#master
+        self.bot.on.get_message()
+        self.bot.on.get_message_chat()
+
+        self.utils('Merging plugins..')
+        for plugin in self.plugins:
+            self.bot.on.append_plugin(plugin)
 
         if longPollEnabled:
 
@@ -77,7 +105,7 @@ class RunBot:
                 )
                 ts = longpoll['ts']
 
-                self.utils('Started listening LongPoll...')
+                self.utils('Started listening LongPoll... TS', ts)
 
                 self.__run(wait, longpoll, ts)
 
@@ -114,7 +142,12 @@ class RunBot:
                     ))
 
                 # LongPoll event by server post method
-                url = f"{longpoll['server']}?act=a_check&key={longpoll['key']}&ts={ts}&wait={wait}&rps_delay=0"
+                url = "{}?act=a_check&key={}&ts={}&wait={}&rps_delay=0".format(
+                    longpoll['server'],
+                    longpoll['key'],
+                    ts,
+                    wait
+                )
                 event = requests.post(url).json()
 
                 # Event Processing
@@ -150,13 +183,13 @@ class RunBot:
 
     async def event_processor(self, event):
         """
-                except KeyError as deprKey:
+        except KeyError as deprKey:
             self.utils.error(
                 'LongPoll Parse error with key {}, check that version of your LongPoll is {}'.format(
                     deprKey,
                     self.bot.api_version
-                )
             )
+        )
         """
         try:
             if event['updates']:
@@ -202,40 +235,44 @@ class RunBot:
 
             answer = ansObject.AnswerObjectChat(self.method, obj, self.bot.group_id)
             found = False
-            priorities = sorted(self.bot.on_message_chat.processor.keys(), key=int, reverse=True)
-            for priority in priorities:
+            plugin_priorities = sorted(self.bot.on.processor_message_chat_regex.keys(), key=int, reverse=True)
+            for plugin_priority in plugin_priorities:
+                priorities = sorted(self.bot.on.processor_message_chat_regex[plugin_priority].keys(), key=int, reverse=True)
+                for priority in priorities:
 
-                for key in self.bot.on_message_chat.processor[priority]:
+                    for key in self.bot.on.processor_message_chat_regex[plugin_priority][priority]:
 
-                    if key.match(text) is not None:
-                        found = True
+                        if key.match(text) is not None:
+                            found = True
 
-                        self.utils(
-                            '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
-                                obj['peer_id'],
-                                obj['text']
-                            ))
-
-                        try:
-                            # Try to run Events processor with passed arguments
-                            if self.async_use:
-                                # [Feature] Async Use
-                                # Added v0.19#master
-                                asyncio.ensure_future(self.bot.on_message_chat.processor[priority][key]['call'](answer, **key.match(text).groupdict()))
-                            else:
-                                self.bot.on_message_chat.processor[priority][key]['call'](answer, **key.match(text).groupdict())
-                        except TypeError:
-                            self.utils.error(
-                                'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                    self.bot.on_message_chat.processor[priority][key]["call"].__name__
-                                ))
-                        finally:
                             self.utils(
-                                'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                                    self.bot.on_message_chat.processor[priority][key]["call"].__name__, obj['from_id']
+                                '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
+                                    obj['peer_id'],
+                                    obj['text']
                                 ))
-                            break
 
+                            try:
+                                # Try to run Events processor with passed arguments
+                                if self.async_use:
+                                    # [Feature] Async Use
+                                    # Added v0.19#master
+                                    asyncio.ensure_future(self.bot.on.processor_message_chat_regex[plugin_priority][priority][key](answer, **key.match(text).groupdict()))
+                                else:
+                                    self.bot.on.processor_message_chat_regex[plugin_priority][priority][key](answer, **key.match(text).groupdict())
+                            except TypeError:
+                                self.utils.error(
+                                    'ADD TO {} FUNCTION REQUIRED ARGS'.format(
+                                        self.bot.on.processor_message_chat_regex[plugin_priority][priority][key].__name__
+                                    ))
+                            finally:
+                                self.utils(
+                                    'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                                        self.bot.on.processor_message_chat_regex[plugin_priority][priority][key].__name__, obj['from_id']
+                                    ))
+                                break
+
+                    if found:
+                        break
                 if found:
                     break
 
@@ -259,7 +296,6 @@ class RunBot:
                 ansObject = AsyncAnswer
 
             answer = ansObject.AnswerObject(self.method, obj, self.bot.group_id)
-            regex_text = False
 
             self.utils(
                 '\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(
@@ -268,46 +304,51 @@ class RunBot:
                 ))
 
             found = False
-            priorities = sorted(self.bot.on_message.processor.keys(), key=int, reverse=True)
 
-            for priority in priorities:
+            plugin_priorities = sorted(self.bot.on.processor_message_regex.keys(), key=int, reverse=True)
 
-                for key in self.bot.on_message.processor[priority]:
+            for plugin_priority in plugin_priorities:
 
-                    if key.match(text) is not None:
-                        found = True
+                priorities = sorted(self.bot.on.processor_message_regex[plugin_priority].keys(), key=int, reverse=True)
 
-                        try:
-                            # [Feature] Async Use
-                            # Added v0.19#master
-                            if self.async_use:
-                                asyncio.ensure_future(self.bot.on_message.processor[priority][key]['call'](answer, **key.match(text).groupdict()))
-                            else:
-                                self.bot.on_message.processor[priority][key]['call'](answer, **key.match(text).groupdict())
-                        except TypeError:
-                            self.utils.error(
-                                'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                    self.bot.on_message.processor[priority][key]["call"].__name__
+                for priority in priorities:
+
+                    for key in self.bot.on.processor_message_regex[plugin_priority][priority]:
+
+                        if key.match(text) is not None:
+                            found = True
+
+                            try:
+                                # [Feature] Async Use
+                                # Added v0.19#master
+                                if self.async_use:
+                                    asyncio.ensure_future(self.bot.on.processor_message_regex[plugin_priority][priority][key](answer, **key.match(text).groupdict()))
+                                else:
+                                    self.bot.on.processor_message_regex[plugin_priority][priority][key](answer, **key.match(text).groupdict())
+                            except TypeError:
+                                self.utils.error(
+                                    'ADD TO {} FUNCTION REQUIRED ARGS'.format(
+                                        self.bot.on.processor_message_regex[plugin_priority][priority][key].__name__
+                                    )
                                 )
-                            )
-                        finally:
-                            self.utils(
-                                'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                                    self.bot.on_message.processor[priority][key]['call'].__name__, obj['peer_id']
-                                ))
-                            break
+                            finally:
+                                self.utils(
+                                    'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                                        self.bot.on.processor_message_regex[plugin_priority][priority][key].__name__, obj['peer_id']
+                                    ))
+                                break
 
-                if found:
-                    break
+                    if found:
+                        break
 
             if not found:
                 if self.async_use:
-                    if isinstance(self.bot.undefined_message_func, types.FunctionType):
-                        asyncio.ensure_future(self.bot.undefined_message_func(answer))
+                    if isinstance(self.bot.on.undefined_message_func, types.FunctionType):
+                        asyncio.ensure_future(self.bot.on.undefined_message_func(answer))
                     else:
-                        self.bot.undefined_message_func(answer)
+                        self.bot.on.undefined_message_func(answer)
                 else:
-                    self.bot.undefined_message_func(answer)
+                    self.bot.on.undefined_message_func(answer)
 
                 self.utils(
                     'New message compile decorator was not found. ' +
