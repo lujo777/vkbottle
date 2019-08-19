@@ -177,10 +177,6 @@ api.messages.send(peer_id=1, message='Hi, my friend!')
 ```
 
 Все методы можно найти здесь [VK Methods Documentation](https://vk.com/dev/methods)
-***
-Подсветку имеют только эти группы методов:
-* messages
-***
 
 ### User Api
 

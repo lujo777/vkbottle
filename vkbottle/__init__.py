@@ -8,19 +8,21 @@ from .methods import Api
 
 from .keyboard import _keyboard
 
-from .vkbottle import RunBot
+from .vkbottle import RunBot, SynchroAnswer
 
 from .exceptions import *
 
 
-__version__ = '0.13'  # Package VKBottle version
+AnswerObject = SynchroAnswer.AnswerObject
+
+__version__ = '0.14'  # Package VKBottle version
 
 __api_version__ = 5.101  # VK Api version
 
 
 # Main Bot Auth
-class Bot(Events):
-    def __init__(self, token, group_id, debug=False, async_use=False, **deprecated):
+class Bot:
+    def __init__(self, token: str, group_id: int, debug=False, async_use=False, plugin_folder: str = 'plugins', **deprecated):
         self.__token = token
         self.api_version = __api_version__
         self.version = __version__
@@ -29,8 +31,12 @@ class Bot(Events):
         self.async_use = async_use
         self.debug = debug
         self.deprecated = deprecated
+        # Plugins
+        self.plugin_folder = plugin_folder
         # Api Usage
         self.api = Api(token, self.url, self.api_version)
+        # Events
+        self.on = Events()
 
     def run(self, wait=25):
         run_bot = RunBot(self, self.__token, self.async_use)
