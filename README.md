@@ -40,28 +40,28 @@ Now we should import our event-files like this: `import events` with `bot.run()`
 
 #### @on_message(text)
 ```python
-@bot.on_message('hi!')
+@bot.on.message('hi!')
 def hi(answer):
     print('Somebody wrote me "hi!"!')
 # if __name__ == '__main__': bot.run()
 ```
 #### @on_message_chat(text)
 ```python
-@bot.on_message_chat('hi!')
+@bot.on.message_chat('hi!')
 def hi(answer):
     print('Somebody wrote me "hi!" in chat!')
 # if __name__ == '__main__': bot.run()
 ```
 #### @on_message_undefined()
 ```python
-@bot.on_message_undefined()
+@bot.on.message_undefined()
 def undefined(answer):
     print('I cannot understand somebody')
 # if __name__ == '__main__': bot.run()
 ```
 #### @on_message_both(text)
 ```python
-@bot.on_message_both('hi!')
+@bot.on.message_both('hi!')
 def hi(answer):
     print('Somebody wrote me "hi!" in chat or in private!')
 # if __name__ == '__main__': bot.run()
@@ -83,7 +83,7 @@ answer(text, attachment=None, keyboard=None, sticker=None) | Needed for fast ans
 
 Examples:  
 ```python
-@bot.on_message('cat')
+@bot.on.message('cat')
 def itz_cat(answer):
     answer('Myaaw')
 # When user send message "cat" to bot, it answers "Myaaw"
@@ -94,7 +94,7 @@ Answer is messages.send method without peer_id, it completes automatically
 
 Actions are events like chat join or chat leave:
 ```python
-@bot.on_chat_action('chat_kick_user')
+@bot.on.chat_action('chat_kick_user')
 def kick_or_leave(answer):
     if answer.obj['action']['member_id'] != answer.user_id:
         answer('This little trap was kicked from the conversation')
@@ -107,7 +107,7 @@ Action documentation you can find on [VK Api/Message Obj/action](https://vk.com/
 
 If you need it, you can add simple keys to your decorators like this:  
 ```python
-@bot.on_message('My name is <name>')
+@bot.on.message('My name is <name>')
 def my_name(answer, name):
     answer('You name is ' + name + '!')
 ```
@@ -118,7 +118,7 @@ It is supported in chat-decorators too
 
 To use async in your plugins just make `async_use` to True and all your events and messages functions to async:
 ```python
-@bot.on_message('how are you')
+@bot.on.message('how are you')
 async def how_are_you(answer):
     await answer('I\'m in the golden age of grotesque!')
     # answer calling should be in await expression

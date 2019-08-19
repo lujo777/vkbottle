@@ -37,14 +37,14 @@ asyncio | Нужно ли использовать async в смеси с мул
 
 #### @on_message(text)
 ```python
-@bot.on_message('hi!')
+@bot.on.message('hi!')
 def hi(answer):
     print('Кто-то написал мне "hi!"!')
 # bot.run()
 ```
 #### @on_message_undefined()
 ```python
-@bot.on_message_undefined()
+@bot.on.message_undefined()
 def undefined(answer):
     print('Я кого-то не понял..')
 # bot.run()
@@ -58,7 +58,7 @@ answer(text, attachment=None, keyboard=None, sticker=None) | Needed for fast ans
 
 Examples:  
 ```python
-@bot.on_message('cat')
+@bot.on.message('cat')
 def itz_cat(answer):
     answer('Myaaw')
 # When user send message "cat" to bot, it answers "Myaaw"
@@ -69,7 +69,7 @@ Answer это messages.send метод без peer_id, он заполняетс
 
 Если это нужно, вы можете добавлять ключи в ваши декораторы так:  
 ```python
-@bot.on_message('My name is <name>')
+@bot.on.message('My name is <name>')
 def my_name(answer, name):
     answer('You name is ' + name + '!')
 ```
@@ -80,7 +80,7 @@ def my_name(answer, name):
 
 Чтобы успешно использовать асинхронность в вашем плагине сделайте параметр `async_use` равным True и доведите все ваши функции событий и сообщений до асинхронности:
 ```python
-@bot.on_message('how are you')
+@bot.on.message('how are you')
 def how_are_you(answer):
     await answer('I\'m in the golden age of grotesque!')
     # answer calling should be in await expression

@@ -1,19 +1,21 @@
-from copy import deepcopy
+from collections import MutableMapping
 
 
-def dict_of_dicts_merge(x, y):
-    z = {}
-    try:
-        overlapping_keys = x.keys() & y.keys()
-        for key in overlapping_keys:
-            z[key] = dict_of_dicts_merge(x[key], y[key])
-        for key in x.keys() - overlapping_keys:
-            z[key] = deepcopy(x[key])
-        for key in y.keys() - overlapping_keys:
-            z[key] = deepcopy(y[key])
-    except AttributeError:
-        pass
-    return z
+def dict_of_dicts_merge(d1, d2):
+    '''
+    Update two dicts of dicts recursively,
+    if either mapping has leaves that are non-dicts,
+    the second's leaf overwrites the first's.
+    '''
+    for k, v in d1.items(): # in Python 2, use .iteritems()!
+        if k in d2:
+            # this next check is the only difference!
+            if all(isinstance(e, MutableMapping) for e in (v, d2[k])):
+                d2[k] = dict_of_dicts_merge(v, d2[k])
+            # we could further check types and merge as appropriate here.
+    d3 = d1.copy()
+    d3.update(d2)
+    return d3
 
 
 def make_priority_path(first: dict, plugin_priority, priority, compile, second):

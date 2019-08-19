@@ -309,7 +309,6 @@ class RunBot:
                 ))
 
             found = False
-
             plugin_priorities = sorted(self.bot.on.processor_message_regex.keys(), key=int, reverse=True)
 
             for plugin_priority in plugin_priorities:
@@ -321,6 +320,7 @@ class RunBot:
                     for key in self.bot.on.processor_message_regex[plugin_priority][priority]:
 
                         if key.match(text) is not None:
+
                             found = True
 
                             try:
@@ -366,7 +366,6 @@ class RunBot:
                 else:
                     self.bot.on.undefined_message_func(answer)
 
-
                 self.utils(
                     'New message compile decorator was not found. ' +
                     'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(
@@ -383,7 +382,6 @@ class RunBot:
 
     async def process_event(self, event):
         try:
-            print(event)
 
             self.utils(
                 '\x1b[31;1m-> NEW EVENT FROM {} TYPE "{}" TIME #'.format(
