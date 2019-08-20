@@ -1,7 +1,5 @@
-from .keyboard import _keyboard
-from random import randint
 import requests
-from .exceptions import *
+from .vk.exceptions import *
 import six
 
 

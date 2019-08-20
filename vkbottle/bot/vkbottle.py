@@ -1,10 +1,14 @@
-from .jsontype import json_type_utils
+from ..jsontype import json_type_utils
 
-from .keyboard import _keyboard
+from .keyboard import keyboard_generator as _keyboard
 
-from .methods import Method
+from ..portable import __version__, __api__
 
-from .path_loader import *
+from ..methods import Method
+
+from ..utils.path_loader import *
+
+from ..utils import Logger
 
 from random import randint
 
@@ -20,10 +24,10 @@ import os
 VERSION_PORTABLE = 'https://raw.githubusercontent.com/timoniq/vkbottle/master/portable/PORTABLE.json'
 
 
-def checkup_plugins(plugin_folder, utils: Utils):
+def checkup_plugins(plugin_folder, logger: Logger):
     if not os.path.exists(plugin_folder):
         os.mkdir(plugin_folder)
-        utils('Plugin Folder was created, PATH "{}"'.format(plugin_folder))
+        logger('Plugin Folder was created, PATH "{}"'.format(plugin_folder))
 
 
 # Bot Universal Class
@@ -38,49 +42,49 @@ class RunBot:
 
         self.url = 'https://api.vk.com/method/'
         self.async_use = async_use
-        self.utils = Utils(self.bot.debug)
+        self.logger = Logger(self.bot.debug)
 
         # [Feature] Newest VKBottle version checkup
         # Added v0.19#master
         actual_portable = requests.get(VERSION_PORTABLE).json()
-        if actual_portable['version'] != self.bot.version:
-            self.utils(
+        if actual_portable['version'] != __version__:
+            self.logger(
                 'Newer version of VKBottle available ({})! '
                 'Install it using \x1b[93;1mpip install vkbottle --upgrade\x1b[0m'.format(
                     actual_portable['version']
                 )
             )
         else:
-            self.utils('You are using the newest version of VKBottle')
+            self.logger('You are using the newest version of VKBottle')
 
-        self.utils('Bot <\x1b[35m{}\x1b[0m> was authorised successfully'.format(self.bot.group_id))
+        self.logger('Bot <\x1b[35m{}\x1b[0m> was authorised successfully'.format(self.bot.group_id))
 
         # [Support] Plugin Support
         # Added v0.20#master
-        checkup_plugins(self.bot.plugin_folder, self.utils)
-        self.plugins = load_plugins(self.bot.plugin_folder, self.utils)
+        checkup_plugins(self.bot.plugin_folder, self.logger)
+        self.plugins = load_plugins(self.bot.plugin_folder, self.logger)
 
-        self.utils(
+        self.logger(
             'Module completed. MODULE USING LONGPOLL VERSION {}'.format(
-                self.bot.api_version
+                __api__
             )
             )
 
         # Deprecated names
         # Added v0.18#master
         if 'asyncio' in self.bot.deprecated:
-            self.utils.warn('Name \'asyncio\' is now deprecated. Use name \'async_use\' and read the docs at')
-        self.method = Method(token, self.url, self.bot.api_version)
+            self.logger.warn('Name \'asyncio\' is now deprecated. Use name \'async_use\' and read the docs at')
+        self.method = Method(token, self.url, __api__)
         self._loop = asyncio.get_event_loop
 
     def run(self, wait):
 
-        self.utils(
+        self.logger(
             'Found {} message decorators'.format(
                     len(self.bot.on.processor_message_regex.keys()) +
                     len(self.bot.on.processor_message_chat_regex.keys())
             ))
-        self.utils(json_type_utils())
+        self.logger(json_type_utils())
 
         # [Feature] If LongPoll is not enabled in the group it automatically stops
         # Added v0.19#master
@@ -93,7 +97,7 @@ class RunBot:
 
         # [Support] Plugin Support
         # Added v0.20#master
-        self.utils('Merging plugins..')
+        self.logger('Merging plugins..')
         for plugin in self.plugins:
             self.bot.on.append_plugin(plugin)
 
@@ -108,15 +112,15 @@ class RunBot:
                 )
                 ts = longpoll['ts']
 
-                self.utils('Started listening LongPoll... TS', ts)
+                self.logger('Started listening LongPoll... TS', ts)
 
                 self.__run(wait, longpoll, ts)
 
             except requests.ConnectionError or requests.ConnectTimeout:
-                self.utils.error('LongPoll Connection error! Check your internet connection and try again!')
+                self.logger.error('LongPoll Connection error! Check your internet connection and try again!')
 
         else:
-            self.utils.error('LongPoll is not enabled in your group')
+            self.logger.error('LongPoll is not enabled in your group')
 
     def __run(self, wait, longpoll, ts):
 
@@ -127,7 +131,7 @@ class RunBot:
                 # [Feature] If LongPoll has a queue of the events after request error
                 # Added v0.18#master
                 if longPollRecycling:
-                    self.utils('Sorting a queue of messages after LongPoll Request error...')
+                    self.logger('Sorting a queue of messages after LongPoll Request error...')
                     event_recycling = self.method(
                         'messages', 'getConversations',
                         {'offset': 0, 'count': 200, 'filter': 'unanswered'}
@@ -140,7 +144,7 @@ class RunBot:
                         loop.run_until_complete(self.event_processor(message['last_message']))
 
                     longPollRecycling = False
-                    self.utils('Events was sorted successfully, sorted {} messages'.format(
+                    self.logger('Events was sorted successfully, sorted {} messages'.format(
                         event_recycling['count']
                     ))
 
@@ -160,11 +164,11 @@ class RunBot:
 
             except requests.ConnectionError or requests.ConnectTimeout:
                 # No internet connection
-                self.utils.warn('Request Connect Timeout! Reloading LongPoll..')
+                self.logger.warn('Request Connect Timeout! Reloading LongPoll..')
                 longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
 
             except RuntimeError as warn:
-                self.utils.warn(
+                self.logger.warn(
                     'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
                     ' or upside down!'.format(
                         warn
@@ -181,7 +185,7 @@ class RunBot:
                 ts = longpoll['ts']
 
             except Exception as e:
-                self.utils.warn('LONGPOLL CONNECTION ERROR! ' + str(e))
+                self.logger.warn('LONGPOLL CONNECTION ERROR! ' + str(e))
                 longPollRecycling = True  # [Feature] If LongPoll has a queue of the events after request error
 
     async def event_processor(self, event):
@@ -210,7 +214,7 @@ class RunBot:
                         await self.process_event(event)
 
         except RuntimeError as warn:
-            self.utils.warn(
+            self.logger.warn(
                 'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
                 ' or upside down!'.format(
                     warn
@@ -240,7 +244,7 @@ class RunBot:
                         if key.match(text) is not None:
                             found = True
 
-                            self.utils(
+                            self.logger(
                                 '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
                                     obj['peer_id'],
                                     obj['text']
@@ -262,13 +266,13 @@ class RunBot:
                                         **key.match(text).groupdict()
                                     )
                             except TypeError:
-                                self.utils.error(
+                                self.logger.error(
                                     'ADD TO {} FUNCTION REQUIRED ARGS'.format(
                                         self.bot.on.processor_message_chat_regex
                                         [plugin_priority][priority][key].__name__
                                     ))
                             finally:
-                                self.utils(
+                                self.logger(
                                     'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
                                         self.bot.on.processor_message_chat_regex
                                         [plugin_priority][priority][key].__name__,
@@ -282,7 +286,7 @@ class RunBot:
                     break
 
         except RuntimeError as warn:
-            self.utils.warn(
+            self.logger.warn(
                 'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
                 ' or upside down!'.format(
                     warn
@@ -302,7 +306,7 @@ class RunBot:
 
             answer = ansObject.AnswerObject(self.method, obj, self.bot.group_id)
 
-            self.utils(
+            self.logger(
                 '\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(
                     obj['peer_id'],
                     obj['text']
@@ -340,13 +344,13 @@ class RunBot:
                                         **key.match(text).groupdict()
                                     )
                             except TypeError:
-                                self.utils.error(
+                                self.logger.error(
                                     'ADD TO {} FUNCTION REQUIRED ARGS'.format(
                                         self.bot.on.processor_message_regex[plugin_priority][priority][key].__name__
                                     )
                                 )
                             finally:
-                                self.utils(
+                                self.logger(
                                     'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
                                         self.bot.on.processor_message_regex[plugin_priority][priority][key].__name__,
                                         obj['peer_id']
@@ -367,14 +371,14 @@ class RunBot:
                     self.bot.on.undefined_message_func(answer)
 
 
-                self.utils(
+                self.logger(
                     'New message compile decorator was not found. ' +
                     'Compiled with decorator \x1b[35m[on-message-undefined]\x1b[0m (from: {})'.format(
                         obj['peer_id']
                     ))
 
         except TypeError as warn:
-            self.utils.warn(
+            self.logger.warn(
                 'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
                 ' or upside down!'.format(
                     warn
@@ -385,7 +389,7 @@ class RunBot:
         try:
             print(event)
 
-            self.utils(
+            self.logger(
                 '\x1b[31;1m-> NEW EVENT FROM {} TYPE "{}" TIME #'.format(
                     event['updates'][0]['object']['user_id'],
                     event['updates'][0]['type']
@@ -408,7 +412,7 @@ class RunBot:
 
                     answer = ansObject.AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
 
-                    self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
+                    self.logger('* EVENT RULES => TRUE. COMPILING EVENT')
                     # [Feature] Async Use
                     # Added v0.19#master
                     if self.async_use:
@@ -418,7 +422,7 @@ class RunBot:
                     else:
                         self.bot.on.events[event_type]['equal'][event['updates'][0]['object'][rule]](answer)
                 else:
-                    self.utils('* EVENT RULES => FALSE. IGNORE EVENT')
+                    self.logger('* EVENT RULES => FALSE. IGNORE EVENT')
             else:
                 # [Feature] Async Answers
                 # Added v0.19#master
@@ -428,7 +432,7 @@ class RunBot:
 
                 answer = ansObject.AnswerObject(self.method, event['updates'][0]['object'], self.bot.group_id)
 
-                self.utils('* EVENT RULES => TRUE. COMPILING EVENT')
+                self.logger('* EVENT RULES => TRUE. COMPILING EVENT')
                 # [Feature] Async Use
                 # Added v0.19#master
                 if self.async_use:
@@ -437,7 +441,7 @@ class RunBot:
                     self.bot.on.events[event_type]['equal']['='](answer)
 
         except TypeError as warn:
-            self.utils.warn(
+            self.logger.warn(
                 'ATTENTION! Warn ({}) is called often because you use async functions when \'async_use\' is False'
                 ' or upside down!'.format(
                     warn
@@ -448,7 +452,7 @@ class RunBot:
         action = obj['action']
         if action['type'] in self.bot.chat_action_types:
 
-            self.utils(
+            self.logger(
                 '\x1b[31;1m-> NEW EVENT FROM CHAT {} TYPE "{}" TIME #'.format(
                     obj['peer_id'],
                     action['type'].upper()
@@ -469,7 +473,7 @@ class RunBot:
             else:
                 self.bot.chat_action_types[action['type']]['call'](answer)
 
-            self.utils(
+            self.logger(
                 'NEW ON-CHAT-ACTION EVENT WAS COMPILED >> '
                 'Compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
                     self.bot.chat_action_types[action['type']]['call'].__name__,

@@ -1,9 +1,8 @@
 import re
 import time
-import json
 
 
-class Utils:
+class Logger:
     """Coloring class, engine of all debug messages and warns
     """
     def __init__(self, debug):
@@ -27,12 +26,6 @@ class Utils:
                     new += separator
             print("[\x1b[34mVK Bottle WARN\x1b[0m] \x1b[93;1m" + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + "\x1b[0m")
 
-    def sjson_dumps(*args, **kwargs):
-        kwargs['ensure_ascii'] = False
-        kwargs['separators'] = (',', ':')
-
-        return json.dumps(*args, **kwargs)
-
     @staticmethod
     def error(*text, separator=' '):
         new = ''
@@ -43,17 +36,6 @@ class Utils:
         print("[\x1b[34mVK Bottle CRITICAL ERROR\x1b[0m] \x1b[31;1m" + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + "\x1b[0m")
 
     def progress_bar(self, iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
-        """
-        Call in a loop to create terminal progress bar
-        @params:
-            iteration   - Required  : current iteration (Int)
-            total       - Required  : total iterations (Int)
-            prefix      - Optional  : prefix string (Str)
-            suffix      - Optional  : suffix string (Str)
-            decimals    - Optional  : positive number of decimals in percent complete (Int)
-            length      - Optional  : character length of bar (Int)
-            fill        - Optional  : bar fill character (Str)
-        """
         if self.debug is True:
             prefix = "[\x1b[34mVK Bottle\x1b[0m] " + prefix
             percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))

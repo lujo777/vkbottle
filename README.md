@@ -36,6 +36,8 @@ async_use | Should vkbottle (Bot) use asyncio to reach more faster results. Defa
 
 Now we should import our event-files like this: `import events` with `bot.run()` in it or make it in one single file
 
+**0.14 OR USE PLUGINS** [ABOUT PLUGINS](#plugins-v020master)
+
 ### Usage Decorators
 
 #### @on_message(text)

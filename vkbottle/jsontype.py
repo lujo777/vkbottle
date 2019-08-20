@@ -1,6 +1,7 @@
 json_module = 'json'
+
 try:
-    import ujson
+    import ujson as json
     json_module = 'ujson'
 except ImportError:
     import json
@@ -13,4 +14,4 @@ def json_type_utils():
 
 
 def dumps(obj, **kwargs):
-    return eval(json_module).dumps(obj, **kwargs)
+    return json.dumps(obj, **kwargs)

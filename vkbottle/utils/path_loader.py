@@ -4,7 +4,7 @@ import os
 
 from .plugin import Plugin
 
-from .utils import Utils
+from ..utils import Logger
 
 import re
 
@@ -18,7 +18,7 @@ def import_module(name, path):
     return module
 
 
-def load_plugins_by_file(path, utils: Utils):
+def load_plugins_by_file(path, logger: Logger):
     module = import_module(path, path)
     plugins = []
 
@@ -31,33 +31,33 @@ def load_plugins_by_file(path, utils: Utils):
     return plugins
 
 
-def load_plugins(folder, utils: Utils):
+def load_plugins(folder, logger: Logger):
     plugins_list = []
     path = 'plugins/'
 
     if len(os.listdir(folder)) > 0:
 
         # [Feature] Progress Bar
-        utils.progress_bar(0, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
+        logger.progress_bar(0, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
                            suffix='Complete', length=50)
 
         for i, name in enumerate(os.listdir(folder)):
             path = os.path.join(folder, name)
 
             if os.path.isdir(path):
-                plugins_list += load_plugins(path, utils)
+                plugins_list += load_plugins(path, logger)
 
             elif re.match(r"^[^_].*\.py$", name):
-                plugins_list += load_plugins_by_file(path, utils)
+                plugins_list += load_plugins_by_file(path, logger)
 
             # Progress Bar Update Delay
             time.sleep(0.05)
 
             # Update Progress Bar
-            utils.progress_bar(i + 1, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
+            logger.progress_bar(i + 1, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
                                suffix='Complete', length=50)
 
-    utils('Found {} Plugins in \x1b[93;1m{}\x1b[0m{}'.format(
+    logger('Found {} Plugins in \x1b[93;1m{}\x1b[0m{}'.format(
         len(plugins_list),
         os.path.dirname(path),
         ':' if len(plugins_list) > 0 else ''),
