@@ -1,3 +1,31 @@
+"""
+ MIT License
+
+ Copyright (c) 2019 Arseniy Timonik
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+"""
+
+"""
+MAIN BOT LONGPOLL CONSTRUCTOR
+"""
+
 from ..jsontype import json_type_utils
 
 from .keyboard import keyboard_generator as _keyboard
@@ -223,6 +251,12 @@ class RunBot:
 
     async def process_message_chat(self, text: str, obj):
         try:
+            self.logger(
+                '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
+                    obj['peer_id'],
+                    obj['text'].replace('\n', ' ')
+                ))
+
             # Answer object for fast chat msg-parsing
 
             # [Feature] Async Answers
@@ -243,12 +277,6 @@ class RunBot:
 
                         if key.match(text) is not None:
                             found = True
-
-                            self.logger(
-                                '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
-                                    obj['peer_id'],
-                                    obj['text']
-                                ))
 
                             try:
                                 # Try to run Events processor with passed arguments
@@ -309,7 +337,7 @@ class RunBot:
             self.logger(
                 '\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(
                     obj['peer_id'],
-                    obj['text']
+                    obj['text'].replace('\n', ' / ')
                 ))
 
             found = False
@@ -369,7 +397,6 @@ class RunBot:
                         self.bot.on.undefined_message_func(answer)
                 else:
                     self.bot.on.undefined_message_func(answer)
-
 
                 self.logger(
                     'New message compile decorator was not found. ' +
@@ -501,7 +528,7 @@ class AsyncAnswer:
         async def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
                            chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None,
                            payload=None, dont_parse_links=False, disable_mentions=False):
-            message = await self.parser(message)
+            message = await self.parser(str(message))
             request = dict(
                 message=message,
                 keyboard=_keyboard(keyboard) if keyboard is not None else None,
@@ -568,7 +595,7 @@ class AsyncAnswer:
         async def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
                            chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None,
                            payload=None, dont_parse_links=False, disable_mentions=False):
-            message = await self.parser(message)
+            message = await self.parser(str(message))
             request = dict(
                 message=message,
                 keyboard=_keyboard(keyboard) if keyboard is not None else None,
@@ -638,7 +665,7 @@ class SynchroAnswer:
         def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
                      chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None,
                      payload=None, dont_parse_links=False, disable_mentions=False):
-            message = self.parser(message)
+            message = self.parser(str(message))
             request = dict(
                 message=message,
                 keyboard=_keyboard(keyboard) if keyboard is not None else None,
@@ -702,26 +729,13 @@ class SynchroAnswer:
                 peer_id=self.peer_id
             )
 
-        def __call__(self, message: str, attachment=None, keyboard=None, sticker_id=None,
-                     chat_id=None, user_ids=None, lat=None, long=None, reply_to=None, forward_messages=None,
-                     payload=None, dont_parse_links=False, disable_mentions=False):
-            message = self.parser(message)
+        def __call__(self, message, keyboard=None, **other):
+            message = self.parser(str(message))
             request = dict(
-                message=message,
+                message=str(message),
                 keyboard=_keyboard(keyboard) if keyboard is not None else None,
-                attachment=attachment,
                 peer_id=self.peer_id,
-                random_id=randint(1, 2e5),
-                sticker_id=sticker_id,
-                chat_id=chat_id,
-                user_ids=user_ids,
-                lat=lat,
-                long=long,
-                reply_to=reply_to,
-                forward_messages=forward_messages,
-                payload=payload,
-                dont_parse_links=dont_parse_links,
-                disable_mentions=disable_mentions
+                **other
             )
             request = {k: v for k, v in request.items() if v is not None}
             return self.method('messages', 'send', request)
