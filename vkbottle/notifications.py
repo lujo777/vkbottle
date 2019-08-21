@@ -23,3 +23,5 @@ runtime_error = 'ATTENTION! Warn ({}) is called often because you use async ' \
                 'functions when \'async_use\' is False or upside down!'
 
 add_undefined = 'Add to your on-message file an on-message-undefined decorator'
+
+keyboard_interrupt = 'VKBottle successfully stopped by Keyboard Interrupt'

@@ -30,10 +30,6 @@ from .vk.exceptions import *
 
 from .portable import API_VERSION, API_URL
 
-from aiohttp import ClientSession
-
-from .jsontype import json
-
 from .utils import HTTPRequest
 
 
@@ -46,7 +42,7 @@ class Method:
     def __init__(self, token: str, request: HTTPRequest = None):
         """
         :param token: VK API Token (universal for User and Bot API)
-        :param client: aioHTTP ClientSession for ordered sessions
+        :param request: aioHTTP ClientSession for ordered sessions
         """
         self.token = token
         self.request = (HTTPRequest() if request is None else request)
@@ -85,7 +81,7 @@ class Api(object):
     """
     def __init__(self, method_object: Method, method = None):
         """
-        :param method_object:
+        :param method_object: object class Method
         :param method: Needed for getattr receiver
         """
         self.method_object = method_object

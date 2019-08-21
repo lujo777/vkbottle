@@ -22,33 +22,54 @@
  SOFTWARE.
 """
 
-from vkbottle.portable import VERSION
-import setuptools
 
-from distutils.core import setup
-setup(
-  name='vkbottle',
-  packages=['vkbottle'],
-  version=VERSION,
-  license='MIT',
-  description='New bot-creating repo with options control like in the famous framework flask!',
-  author='Arseniy Timonik',
-  author_email='timonik.bss@gmail.com',
-  url='https://github.com/timoniq/vkbottle',
-  long_description=open('README.md', encoding='utf-8').read(),
-  long_description_content_type='text/markdown',
-  download_url='https://github.com/timoniq/vkbottle/archive/v' + VERSION + '.tar.gz',
-  keywords=['vk', 'vkontakte', 'vk-api', 'vk-bot', 'vkbottle', 'vk-bottle'],
-  install_requires=[
-    'aiohttp'
-  ],
-  classifiers=[
-    'Development Status :: 3 - Alpha',
-    'Intended Audience :: Developers',
-    'Topic :: Software Development :: Build Tools',
-    'License :: OSI Approved :: MIT License',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7'
-  ],
-)
+from ...types.longpoll import EventTypes
+
+from ...methods import Api
+
+from ..events import Events
+
+from ...utils import Logger
+import time
+import random
+
+
+class UpdatesProcessor(object):
+    """
+    Processor of VK API LongPoll events
+    """
+    on: Events
+    logger: Logger
+    api: Api
+
+    async def new_update(self, event: dict):
+        """
+        Process VK Event Object
+        :param event:
+        :return:
+        """
+
+        for update in event['updates']:
+
+            obj = update['object']
+
+            if update['type'] == EventTypes.MESSAGE_NEW:
+
+                if obj['peer_id'] < 2e9:
+                    pass
+
+                else:
+                    pass
+
+            else:
+                # If this is an event of the group
+                print('receive event')
+                pass
+
+        # await self.api.request('messages', 'send',
+        #                       {'message': 'a?', 'random_id': random.randint(-2e9, 2e9), 'peer_id': obj['peer_id']})
+
+        print(round(time.time() - self.a, 5))
+
+    async def new_message(self, obj: dict):
+

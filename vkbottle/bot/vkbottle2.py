@@ -31,12 +31,15 @@ from ..jsontype import json
 from ..utils import Logger, HTTP, path_loader
 from ..methods import Method, Api
 from .. import notifications as nf
-from .events import Events
+from .events import Events, processor
 from aiohttp import ClientSession, ClientConnectionError, ClientTimeout
 import asyncio
 
+import time
+import random
 
-class LongPollBot(HTTP):
+
+class LongPollBot(HTTP, processor.UpdatesProcessor):
     """
     Standart LongPoll VK Bot engine
 
@@ -74,7 +77,10 @@ class LongPollBot(HTTP):
         """
         self.wait = wait
         loop = self._loop()
-        loop.run_until_complete(self.start())
+        try:
+            loop.run_until_complete(self.start())
+        except KeyboardInterrupt:
+            self.logger.warn(nf.keyboard_interrupt)
 
     async def start(self):
         """
@@ -101,11 +107,10 @@ class LongPollBot(HTTP):
             # [Feature] Merge messages dictionaries
             # Added v0.20#master
             # todo RU - убрать это в отдельный враппер
-            self.on.get_message()
-            self.on.get_message_chat()
+            self.on.merge_processors()
 
-            for plugin in self.plugins:
-                self.on.append_plugin(plugin)  # fixme
+            """for plugin in self.plugins:
+                self.on.append_plugin(plugin)  # fixme"""
 
             longPollServer = await self.get_server()
 
@@ -127,7 +132,7 @@ class LongPollBot(HTTP):
         """
         Make longPoll request to the VK Server. Comes off after wait time
         :param longPollServer:
-        :return:
+        :return: VK LongPoll Event
         """
         url = "{}?act=a_check&key={}&ts={}&wait={}&rps_delay=0".format(
                     longPollServer['server'],
@@ -141,8 +146,8 @@ class LongPollBot(HTTP):
         while True:
             try:
                 event = await self.make_long_request(longPollServer)
-                print(event)
-
+                self.a = time.time()
+                await self.new_update(event)
                 longPollServer = await self.get_server()
 
             except ClientConnectionError or ClientTimeout:
