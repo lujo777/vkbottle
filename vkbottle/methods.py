@@ -26,15 +26,69 @@
 VK API WRAPPER
 """
 
-import requests
 from .vk.exceptions import *
+
+from .portable import API_VERSION, API_URL
+
+from aiohttp import ClientSession
+
+from .jsontype import json
+
+from .utils import HTTPRequest
+
+
+class Method:
+    """
+    VK API Method
+
+    Universal for User and Bot API. Make single async requests to VK API Server
+    """
+    def __init__(self, token: str, request: HTTPRequest = None):
+        """
+        :param token: VK API Token (universal for User and Bot API)
+        :param client: aioHTTP ClientSession for ordered sessions
+        """
+        self.token = token
+        self.request = (HTTPRequest() if request is None else request)
+
+    async def __call__(self, group, method, data: dict = None):
+        """
+        VK API Method Wrapper
+        :param group: method group
+        :param method: method name
+        :param data: method options
+        :return: VK API Server Response
+        """
+
+        data = data or {}
+
+        response = await self.request.post(url= API_URL + group + '.' + method + '/?access_token={token}&v={version}'.format(
+                token=self.token,
+                version=API_VERSION),
+                params=data)
+
+        try:
+            return response['response']
+        except AttributeError:
+            raise VKError([
+                response['error']['error_code'],
+                response['error']['error_msg']
+            ])
 
 
 class Api(object):
-    def __init__(self, token, url, api_version, method=None):
-        self.__token = token
-        self.__url = url
-        self.__api_version = api_version
+    """
+    Allow to make requests like this:
+    bot.api.messages.send(**kwargs)
+
+    Receive only kwargs, no positional arguments. Kwargs can be skipped
+    """
+    def __init__(self, method_object: Method, method = None):
+        """
+        :param method_object:
+        :param method: Needed for getattr receiver
+        """
+        self.method_object = method_object
         self._method = method
 
     def __getattr__(self, method):
@@ -43,13 +97,20 @@ class Api(object):
             method = m[0] + ''.join(i.title() for i in m[1:])
 
         return Api(
-            self.__token,
-            self.__url,
-            self.__api_version,
+            self.method_object,
             (self._method + '.' if self._method else '') + method
         )
 
-    def __call__(self, **kwargs):
+    async def request(self, group, method, data: dict = None) -> dict:
+        data = data or {}
+        return await self.method_object(group, method, data)
+
+    async def __call__(self, **kwargs) -> dict:
+        """
+        API Method Maker
+        :param kwargs: all data of the request
+        :return: VK Server Response
+        """
         for k, v in enumerate(kwargs):
             if isinstance(v, (list, tuple)):
                 kwargs[k] = ','.join(str(x) for x in v)
@@ -58,29 +119,4 @@ class Api(object):
             group = method[0]
             method = method[1]
 
-            return Method(self.__token, self.__url, self.__api_version)(group, method, kwargs)
-
-
-class Method:
-    def __init__(self, token, url, api_version):
-        self.token = token
-        self.url = url
-        self.api_version = api_version
-
-    def __call__(self, group, method, args):
-        res = requests.post(
-            f'{self.url}{group}.{method}/?access_token={self.token}&v={self.api_version}',
-            data=args
-        ).json()
-        if 'response' not in res:
-            """
-            When the error appeared exception VKError will return list with error code and error message
-            """
-            raise VKError(
-                [
-                    res['error']['error_code'],
-                    res['error']['error_msg']
-                ]
-            )
-        else:
-            return res['response']
+            return await self.method_object(group, method, kwargs)

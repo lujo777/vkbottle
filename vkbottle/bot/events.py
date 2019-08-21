@@ -45,7 +45,7 @@ class OnMessage(object):
     def __call__(self, text, priority: int = 0):
         def decorator(func):
             self.processor = make_priority_path(self.processor,
-                                                *[self.this.plugin_priority, priority, regex_message(text)],
+                                                *[priority, regex_message(text)],
                                                 func)
             return func
         return decorator
@@ -64,7 +64,7 @@ class OnMessage(object):
 
             self.processor = make_priority_path(
                   self.processor,
-                  *[self.this.plugin_priority, priority, re.compile(pattern)],
+                  *[priority, re.compile(pattern)],
                   func
             )
 
@@ -75,7 +75,7 @@ class OnMessage(object):
     def regex(self, pattern, priority: int = 0):
         def decorator(func):
             self.processor = make_priority_path(self.processor,
-                                                *[self.this.plugin_priority, priority, re.compile(pattern)],
+                                                *[priority, re.compile(pattern)],
                                                 func)
             return func
         return decorator
@@ -92,7 +92,7 @@ class OnMessageChat(object):
     def __call__(self, text, priority: int = 0):
         def decorator(func):
             self.processor = make_priority_path(self.processor,
-                                                *[self.this.plugin_priority, priority, regex_message(text)],
+                                                *[priority, regex_message(text)],
                                                 func)
             return func
         return decorator
@@ -103,7 +103,7 @@ class OnMessageChat(object):
             escape = {ord(x): ('\\' + x) for x in r'\.*+?()[]|^$'}
             pattern = re.sub(r'(<.*?>)', r'(?P\1.*)', text.translate(escape)) + r'.*?'
             self.processor = make_priority_path(self.processor,
-                                                *[self.this.plugin_priority, priority, re.compile(pattern)],
+                                                *[priority, re.compile(pattern)],
                                                 func)
             return func
         return decorator
@@ -112,7 +112,7 @@ class OnMessageChat(object):
         def decorator(func):
             pattern = regex
             self.processor = make_priority_path(self.processor,
-                                                *[self.this.plugin_priority, priority, re.compile(pattern)],
+                                                *[priority, re.compile(pattern)],
                                                 func)
             return func
         return decorator
@@ -130,10 +130,10 @@ class OnMessageBoth(object):
     def __call__(self, text, priority: int = 0):
         def decorator(func):
             self.processor_message = make_priority_path(self.processor_message,
-                                                        *[self.this.plugin_priority, priority, regex_message(text)],
+                                                        *[priority, regex_message(text)],
                                                         func)
             self.processor_chat = make_priority_path(self.processor_chat,
-                                                     *[self.this.plugin_priority, priority, regex_message(text)],
+                                                     *[priority, regex_message(text)],
                                                      func)
             return func
         return decorator
@@ -143,10 +143,10 @@ class OnMessageBoth(object):
             escape = {ord(x): ('\\' + x) for x in r'\.*+?()[]|^$'}
             pattern = re.sub(r'(<.*?>)', r'(?P\1.*)', text.translate(escape)) + r'.*?'
             self.processor_message = make_priority_path(self.processor_message,
-                                                        *[self.this.plugin_priority, priority, re.compile(pattern)],
+                                                        *[priority, re.compile(pattern)],
                                                         func)
             self.processor_chat = make_priority_path(self.processor_chat,
-                                                     *[self.this.plugin_priority, priority, re.compile(pattern)],
+                                                     *[priority, re.compile(pattern)],
                                                      func)
             return func
         return decorator
@@ -154,10 +154,10 @@ class OnMessageBoth(object):
     def regex(self, pattern, priority: int = 0):
         def decorator(func):
             self.processor_message = make_priority_path(self.processor_message,
-                                                        *[self.this.plugin_priority, priority, re.compile(pattern)],
+                                                        *[priority, re.compile(pattern)],
                                                         func)
             self.processor_chat = make_priority_path(self.processor_chat,
-                                                     *[self.this.plugin_priority, priority, re.compile(pattern)],
+                                                     *[priority, re.compile(pattern)],
                                                      func)
             return func
         return decorator
@@ -181,17 +181,10 @@ class Events:
         self.message_chat = OnMessageChat(self)
         self.message_both = OnMessageBoth(self)
 
-        self(0)
-
-    def __call__(self, priority=0):
-        self.plugin_priority = priority
-        if priority not in self.processor_message_regex:
-            self.processor_message_regex[priority] = {}
-        if priority not in self.processor_message_chat_regex:
-            self.processor_message_chat_regex[priority] = {}
-
     def get_message(self):
+        print('getmewhubs', self.message.processor)
         processor = dict_of_dicts_merge(self.message.processor, self.message_both.processor_message)
+        print('getmessgae', processor)
         self.processor_message_regex = processor
 
     def get_message_chat(self):
@@ -199,10 +192,8 @@ class Events:
         self.processor_message_chat_regex = processor
 
     def append_plugin(self, plugin):
-        self.processor_message_regex = plugin.on.processor_message_regex
-        self.processor_message_chat_regex = plugin.on.processor_message_chat_regex
-        self.events = plugin.on.events
-        self.chat_action_types = plugin.on.chat_action_types
+        self.processor_message_regex = dict_of_dicts_merge(self.processor_message_regex, plugin.on.processor_message_regex)
+        self.processor_message_chat_regex = dict_of_dicts_merge(self.processor_message_chat_regex, plugin.on.processor_message_chat_regex)
 
     def chat_action(self, type_):
         def decorator(func):

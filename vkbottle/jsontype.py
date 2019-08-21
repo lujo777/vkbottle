@@ -35,6 +35,9 @@ except ImportError:
     import json
 
 
+json = json
+
+
 def json_type_utils():
     if json_module == 'ujson':
         return 'You are using \x1b[35mFAST\x1b[0m JSON-Compiler based on UJSON'

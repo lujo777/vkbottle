@@ -34,4 +34,3 @@ class Plugin:
         self.description = description
         # Decorators
         self.on = bot.on
-        self.on(priority)
