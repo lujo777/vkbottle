@@ -62,17 +62,14 @@ class UpdatesProcessor(object):
                     await self.new_message(obj)
 
                 else:
-                    pass
+                    await self.new_chat_message(obj)
 
             else:
                 # If this is an event of the group
                 print('receive event')
                 pass
 
-        # await self.api.request('messages', 'send',
-        #                       {'message': 'a?', 'random_id': random.randint(-2e9, 2e9), 'peer_id': obj['peer_id']})
-
-        print(round(time.time() - self.a, 5))
+        await self.logger('Timing:', round(time.time() - self.a, 5))
 
     async def new_message(self, obj: dict):
 
@@ -91,30 +88,59 @@ class UpdatesProcessor(object):
 
                 if key.match(answer.text) is not None:
                     found = True
-                    try:
-                        # [Feature] Async Use
-                        # Added v0.19#master
-                        await self.on.processor_message_regex[priority][key](
-                            answer,
-                            **key.match(answer.text).groupdict()
+                    # [Feature] Async Use
+                    # Added v0.19#master
+                    await self.on.processor_message_regex[priority][key](
+                        answer,
+                        **key.match(answer.text).groupdict()
+                    )
+
+                    await self.logger(
+                        'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                            self.on.processor_message_regex[priority][key].__name__,
+                            obj['peer_id']
                         )
-                    except TypeError:
-                        await self.logger.error(
-                            'ADD TO {} FUNCTION REQUIRED ARGS'.format(
-                                self.on.processor_message_regex[priority][key].__name__
-                            )
-                        )
-                    finally:
-                        await self.logger(
-                            'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                                self.on.processor_message_regex[priority][key].__name__,
-                                obj['peer_id']
-                            )
-                        )
-                        break
+                    )
+
+                    break
 
             if found:
                 break
 
         if not found:
             await self.on.undefined_message_func(answer)
+
+    async def new_chat_message(self, obj: dict):
+
+        await self.logger(
+            '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
+                obj['peer_id'],
+                obj['text'].replace('\n', ' ')
+            ))
+
+        answer = message.Message(**obj)
+        found: bool = False
+
+        for priority in await sorted_dict_keys(self.on.processor_message_chat_regex):
+
+            for key in self.on.processor_message_chat_regex[priority]:
+
+                if key.match(answer.text) is not None:
+                    found = True
+                    # [Feature] Async Use
+                    # Added v0.19#master
+                    await self.on.processor_message_chat_regex[priority][key](
+                        answer,
+                        **key.match(answer.text).groupdict()
+                    )
+
+                    await self.logger(
+                        'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                            self.on.processor_message_chat_regex[priority][key].__name__,
+                            obj['peer_id']
+                        )
+                    )
+                    break
+
+            if found:
+                break

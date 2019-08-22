@@ -80,7 +80,7 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         try:
             loop.run_until_complete(self.start())
         except KeyboardInterrupt:
-            self.logger.warn(nf.keyboard_interrupt)
+            self._loop().run_until_complete(self.logger.warn(nf.keyboard_interrupt))
 
     async def start(self):
         """
@@ -152,4 +152,4 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
 
             except ClientConnectionError or ClientTimeout:
                 # No internet connection
-                self.logger.warn(nf.request_connection_timeout)
+                await self.logger.warn(nf.request_connection_timeout)

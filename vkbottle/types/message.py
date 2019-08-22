@@ -53,11 +53,10 @@ class Message(BaseModel):
     payload: str = None
     fwd_messages: list
     reply_message: dict = None
-    api: Api
 
-    def __call__(self, message, attachment: str = None, keyboard: list = None,
+    """def __call__(self, message, attachment: str = None, keyboard: list = None,
                  sticker_id: int = None, chat_id: int = None, user_ids: str = None,
                  lat: float = None, long: float = None, reply_to: int = None,
                  forward_messages: str = None, disable_mentions: int = None,
                  dont_parse_links: int = None, payload: str = None):
-        pass
+        pass"""

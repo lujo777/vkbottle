@@ -28,6 +28,7 @@ FILE WITH LOGGERS AND LOG-FEATURES
 
 import re
 import time
+from ..collections import colored, ANSIColor
 
 
 class Logger:
@@ -43,7 +44,7 @@ class Logger:
                 new += str(el)
                 if i + 1 != len(text):
                     new += separator
-            print("[\x1b[34mVK Bottle\x1b[0m] " + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + "\x1b[0m")
+            print("[" + colored('VKBottle', 'blue') + "] " + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + ANSIColor.RESET)
 
     async def warn(self, *text, separator=' '):
         if self.debug is True:
@@ -52,7 +53,7 @@ class Logger:
                 new += str(el)
                 if i + 1 != len(text):
                     new += separator
-            print("[\x1b[34mVK Bottle WARN\x1b[0m] \x1b[93;1m" + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + "\x1b[0m")
+            print("[" + colored('VKBottle WARN', 'blue') + "] " + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + ANSIColor.RESET)
 
     @staticmethod
     async def error(*text, separator=' '):
@@ -61,11 +62,11 @@ class Logger:
             new += str(el)
             if i + 1 != len(text):
                 new += separator
-        print("[\x1b[34mVK Bottle CRITICAL ERROR\x1b[0m] \x1b[31;1m" + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + "\x1b[0m")
+        print("[" + colored('VKBottle ERROR', 'blue') + "] " + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + ANSIColor.RESET)
 
     async def progress_bar(self, iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
         if self.debug is True:
-            prefix = "[\x1b[34mVK Bottle\x1b[0m] " + prefix
+            prefix = "[" + colored('VKBottle ERROR', 'blue') + "] " + prefix
             percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
             filledLength = int(length * iteration // total)
             bar = fill * filledLength + '-' * (length - filledLength)
