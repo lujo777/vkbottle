@@ -34,11 +34,16 @@ from .events import OnMessage, OnMessageChat, OnMessageBoth
 
 
 class Events:
-    def __init__(self, logger: Logger = Logger(True)):
+    def __init__(self, logger: Logger = Logger(True), use_regex: bool = True):
         """
         Make decorator processors (dictionaries with functions)
         :param logger: Logging object
+        :param use_regex: More comfortable with regex, but if speed is main priority...
+        fixme RU - не доделал это..
         """
+        # Collections
+        self.use_regex = use_regex
+
         # Processors
         self.processor_message_regex = {}
 

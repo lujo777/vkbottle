@@ -31,8 +31,6 @@ from pydantic import BaseModel
 
 from random import randint
 
-from ..methods import Api
-
 
 class Geo(object):
     type: str

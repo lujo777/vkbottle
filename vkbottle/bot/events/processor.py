@@ -33,7 +33,7 @@ from ...utils import Logger, sorted_dict_keys
 
 import time
 
-from ...types import message
+from ...types import message, event
 
 from ...collections import colored
 
@@ -161,3 +161,12 @@ class UpdatesProcessor(object):
 
             if found:
                 break
+
+    async def new_event(self, event_type: str, obj: dict):
+        """
+        LongPoll Events Processor
+        :param event_type: VK Server Event Type
+        :param obj: VK Server Event Object
+        """
+        answer = event.Event(event_type=event_type, obj=obj)
+        print(answer.f.__dir__())

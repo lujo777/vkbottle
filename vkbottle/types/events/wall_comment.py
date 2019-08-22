@@ -22,24 +22,33 @@
  SOFTWARE.
 """
 
-
-class ANSIColor(object):
-    RESET = '\x1b[0m'
-    BLUE = '\x1b[34m'
-    YELLOW = '\x1b[93;1m'
-    RED = '\x1b[31;1m'
-    MAGENTA = '\x1b[35m'
+"""
+VK API EVENT TYPES
+"""
 
 
-colors: dict = {
-    'default': ANSIColor.RESET,
-    'blue': ANSIColor.BLUE,
-    'yellow': ANSIColor.YELLOW,
-    'red': ANSIColor.RED,
-    'magenta': ANSIColor.MAGENTA
-}
+from pydantic import BaseModel
 
 
-def colored(tocolor, color: str = 'default'):
-    color = colors.get(color, ANSIColor.RESET)
-    return color + str(tocolor) + ANSIColor.RESET
+class Thread(BaseModel):
+    count: int
+    items: list
+    can_post: bool
+    show_reply_button: bool
+    groups_can_post: bool
+
+
+class WallComment(BaseModel):
+    user_id: int = None
+    id: int = None
+    from_id: int = None
+    date: int = None
+    text: str = None
+    reply_to_user: int = None
+    reply_to_comment: int = None
+    attachments: dict = None
+    parents_stack: list = None
+    thread: dict = {}
+    thread = Thread(**thread)
+
+

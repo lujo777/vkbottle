@@ -22,24 +22,25 @@
  SOFTWARE.
 """
 
-
-class ANSIColor(object):
-    RESET = '\x1b[0m'
-    BLUE = '\x1b[34m'
-    YELLOW = '\x1b[93;1m'
-    RED = '\x1b[31;1m'
-    MAGENTA = '\x1b[35m'
+"""
+VK API EVENT TYPES
+"""
 
 
-colors: dict = {
-    'default': ANSIColor.RESET,
-    'blue': ANSIColor.BLUE,
-    'yellow': ANSIColor.YELLOW,
-    'red': ANSIColor.RED,
-    'magenta': ANSIColor.MAGENTA
+from pydantic import BaseModel
+
+from random import randint
+
+from enum import Enum
+
+from .events.wall_comment import WallComment
+
+events = {
+    'wall_reply_new': WallComment
 }
 
 
-def colored(tocolor, color: str = 'default'):
-    color = colors.get(color, ANSIColor.RESET)
-    return color + str(tocolor) + ANSIColor.RESET
+class Event(BaseModel):
+    event_type: str = None
+    obj: dict = None
+    f: object = events.get(event_type, object)(**obj)
