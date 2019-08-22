@@ -27,7 +27,6 @@ MAIN BOT LONGPOLL CONSTRUCTOR
 """
 
 from ..portable import __version__ as VERSION, API_VERSION
-from ..jsontype import json
 from ..utils import Logger, HTTP, path_loader
 from ..methods import Method, Api
 from .. import notifications as nf
@@ -36,7 +35,6 @@ from aiohttp import ClientSession, ClientConnectionError, ClientTimeout
 import asyncio
 
 import time
-import random
 
 
 class LongPollBot(HTTP, processor.UpdatesProcessor):
@@ -47,7 +45,7 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
     """
     wait: int
 
-    def __init__(self, token: str, group_id: int, plugin_folder: str = None, debug: bool = False):
+    def __init__(self, token: str, group_id: int, plugin_folder: str = None, debug: bool = False, use_regex: bool = True):
         """
         Bot Main Auth
         :param token: VK Api Token
@@ -56,19 +54,20 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         :param debug: Should VKBottle show debugging messages
         """
 
-        self.group_id = group_id
-        self.logger = Logger(debug)
+        self.group_id: int = group_id
+        self.logger: Logger = Logger(debug)
+        self.use_regex: bool = use_regex
 
         self.session = ClientSession
         self._loop = asyncio.get_event_loop
 
-        self.on = Events()
-        self._method = Method(token)
-        self.api = Api(self._method)
+        self.on: Events = Events()
+        self._method: Method = Method(token)
+        self.api: Api = Api(self._method)
 
         # [Support] Plugin Support
         # Added v0.20#master
-        self.plugins = path_loader.load_plugins(plugin_folder, self.logger)
+        self._plugins = path_loader.load_plugins(plugin_folder, self.logger)
 
     def run(self, wait: int = 25):
         """
@@ -109,7 +108,7 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
             # todo RU - убрать это в отдельный враппер
             self.on.merge_processors()
 
-            """for plugin in self.plugins:
+            """for plugin in self._plugins:
                 self.on.append_plugin(plugin)  # fixme"""
 
             longPollServer = await self.get_server()

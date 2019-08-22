@@ -70,7 +70,7 @@ class UpdatesProcessor(object):
                 print('receive event')
                 pass
 
-        # await self.logger('Timing:', round(time.time() - self.a, 5))
+        await self.logger('Timing:', round(time.time() - self.a, 5))
 
     async def new_message(self, obj: dict):
         """
@@ -88,7 +88,7 @@ class UpdatesProcessor(object):
             )
         )
 
-        answer = message.Message(**obj)
+        answer = message.Message(**obj, api=[self.api])
         found: bool = False
 
         for priority in await sorted_dict_keys(self.on.processor_message_regex):
@@ -105,8 +105,9 @@ class UpdatesProcessor(object):
                     )
 
                     await self.logger(
-                        'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
-                            self.on.processor_message_regex[priority][key].__name__,
+                        'New message compiled with decorator <' +
+                        colored(self.on.processor_message_regex[priority][key].__name__, 'magenta') +
+                        '> (from: {})'.format(
                             obj['peer_id']
                         )
                     )
@@ -134,7 +135,7 @@ class UpdatesProcessor(object):
                 'red'
             ))
 
-        answer = message.Message(**obj)
+        answer = message.Message(**obj, api=[self.api])
         found: bool = False
 
         for priority in await sorted_dict_keys(self.on.processor_message_chat_regex):

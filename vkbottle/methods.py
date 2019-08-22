@@ -65,7 +65,7 @@ class Method:
 
         try:
             return response['response']
-        except AttributeError:
+        except KeyError:
             raise VKError([
                 response['error']['error_code'],
                 response['error']['error_msg']

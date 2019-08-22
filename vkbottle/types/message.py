@@ -29,6 +29,8 @@ VK API MESSAGE TYPES
 
 from pydantic import BaseModel
 
+from random import randint
+
 from ..methods import Api
 
 
@@ -53,10 +55,58 @@ class Message(BaseModel):
     payload: str = None
     fwd_messages: list
     reply_message: dict = None
+    api: list = None
 
-    """def __call__(self, message, attachment: str = None, keyboard: list = None,
+    async def __call__(self, message: str = None, attachment: str = None, keyboard: list = None,
                  sticker_id: int = None, chat_id: int = None, user_ids: str = None,
                  lat: float = None, long: float = None, reply_to: int = None,
                  forward_messages: str = None, disable_mentions: int = None,
                  dont_parse_links: int = None, payload: str = None):
-        pass"""
+        return await self.api[0].request(
+            'messages',
+            'send',
+            dict(
+                peer_id=self.peer_id,
+                random_id=randint(-1e9, 1e9),
+                message=message,
+                attachment=attachment,
+                keyboard=keyboard,
+                sticker_id=sticker_id,
+                chat_id=chat_id,
+                user_ids=user_ids,
+                lat=lat,
+                long=long,
+                reply_to=reply_to,
+                forward_messages=forward_messages,
+                disable_mentions=disable_mentions,
+                dont_parse_links=dont_parse_links,
+                payload=payload
+            )
+        )
+
+    async def reply(self, message: str = None, attachment: str = None, keyboard: list = None,
+                 sticker_id: int = None, chat_id: int = None, user_ids: str = None,
+                 lat: float = None, long: float = None, reply_to: int = None,
+                 forward_messages: str = None, disable_mentions: int = None,
+                 dont_parse_links: int = None, payload: str = None):
+        return await self.api[0].request(
+            'messages',
+            'send',
+            dict(
+                peer_id=self.peer_id,
+                random_id=randint(-1e9, 1e9),
+                message=message,
+                attachment=attachment,
+                keyboard=keyboard,
+                sticker_id=sticker_id,
+                chat_id=chat_id,
+                user_ids=user_ids,
+                lat=lat,
+                long=long,
+                reply_to=reply_to or self.id,
+                forward_messages=forward_messages,
+                disable_mentions=disable_mentions,
+                dont_parse_links=dont_parse_links,
+                payload=payload
+            )
+        )
