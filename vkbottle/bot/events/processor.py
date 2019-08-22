@@ -35,6 +35,8 @@ import time
 
 from ...types import message
 
+from ...collections import colored
+
 
 class UpdatesProcessor(object):
     """
@@ -48,8 +50,7 @@ class UpdatesProcessor(object):
     async def new_update(self, event: dict):
         """
         Process VK Event Object
-        :param event:
-        :return:
+        :param event: VK Server Event object
         """
 
         for update in event['updates']:
@@ -69,15 +70,23 @@ class UpdatesProcessor(object):
                 print('receive event')
                 pass
 
-        await self.logger('Timing:', round(time.time() - self.a, 5))
+        # await self.logger('Timing:', round(time.time() - self.a, 5))
 
     async def new_message(self, obj: dict):
+        """
+        Private message processor. Using regex to process regular expressions in messages
+        :param obj: VK API Event Object
+        """
 
         await self.logger(
-            '\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(
-                obj['peer_id'],
-                obj['text'].replace('\n', ' / ')
-            ))
+            colored(
+                '-> MESSAGE FROM {} TEXT "{}" TIME #'.format(
+                    obj['peer_id'],
+                    obj['text'].replace('\n', ' / ')
+            ),
+                'red'
+            )
+        )
 
         answer = message.Message(**obj)
         found: bool = False
@@ -111,11 +120,18 @@ class UpdatesProcessor(object):
             await self.on.undefined_message_func(answer)
 
     async def new_chat_message(self, obj: dict):
+        """
+        Chat messages processor. Using regex to process regular expressions in messages
+        :param obj: VK API Event Object
+        """
 
         await self.logger(
-            '\x1b[31;1m-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
-                obj['peer_id'],
-                obj['text'].replace('\n', ' ')
+            colored(
+                '-> MESSAGE FROM CHAT {} TEXT "{}" TIME #'.format(
+                    obj['peer_id'],
+                    obj['text'].replace('\n', ' ')
+                ),
+                'red'
             ))
 
         answer = message.Message(**obj)

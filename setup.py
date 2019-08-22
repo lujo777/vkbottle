@@ -35,7 +35,7 @@ setup(
   author='Arseniy Timonik',
   author_email='timonik.bss@gmail.com',
   url='https://github.com/timoniq/vkbottle',
-  long_description=open('README.md', encoding='utf-8').read(),
+  long_description=open('OLD-README.md', encoding='utf-8').read(),
   long_description_content_type='text/markdown',
   download_url='https://github.com/timoniq/vkbottle/archive/v' + VERSION + '.tar.gz',
   keywords=['vk', 'vkontakte', 'vk-api', 'vk-bot', 'vkbottle', 'vk-bottle'],
