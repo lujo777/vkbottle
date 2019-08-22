@@ -36,7 +36,7 @@ class Logger:
     def __init__(self, debug):
         self.debug = debug
 
-    def __call__(self, *text, separator=' '):
+    async def __call__(self, *text, separator=' '):
         if self.debug is True:
             new = ''
             for i, el in enumerate(text):
@@ -45,7 +45,7 @@ class Logger:
                     new += separator
             print("[\x1b[34mVK Bottle\x1b[0m] " + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + "\x1b[0m")
 
-    def warn(self, *text, separator=' '):
+    async def warn(self, *text, separator=' '):
         if self.debug is True:
             new = ''
             for i, el in enumerate(text):
@@ -55,7 +55,7 @@ class Logger:
             print("[\x1b[34mVK Bottle WARN\x1b[0m] \x1b[93;1m" + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + "\x1b[0m")
 
     @staticmethod
-    def error(*text, separator=' '):
+    async def error(*text, separator=' '):
         new = ''
         for i, el in enumerate(text):
             new += str(el)
@@ -63,7 +63,7 @@ class Logger:
                 new += separator
         print("[\x1b[34mVK Bottle CRITICAL ERROR\x1b[0m] \x1b[31;1m" + re.sub('#', time.strftime("%m-%d %H:%M:%S", time.gmtime()), new) + "\x1b[0m")
 
-    def progress_bar(self, iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
+    async def progress_bar(self, iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
         if self.debug is True:
             prefix = "[\x1b[34mVK Bottle\x1b[0m] " + prefix
             percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))

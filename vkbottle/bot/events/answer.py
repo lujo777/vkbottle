@@ -1,7 +1,8 @@
-class AnswerObject(object):
-    def __init__(self, obj: dict):
-        self.obj = obj
+from pydantic import BaseModel
 
-    def __getattr__(self, attr):
-        print(attr)
+from ...types import message
 
+
+class AnswerObject(BaseModel, message.MessageObject):
+    def __call__(self, *args, **kwargs):
+        print('че ты сделол')

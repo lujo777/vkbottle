@@ -93,9 +93,9 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         Check newest version of VKBottle and alarm if newer version is available
         """
         if current_portable['version'] != VERSION:
-            self.logger(nf.newer_version.format(current_portable['version']))
+            await self.logger(nf.newer_version.format(current_portable['version']))
         else:
-            self.logger(nf.newest_version)
+            await self.logger(nf.newest_version)
 
         # [Feature] If LongPoll is not enabled in the group it automatically stops
         # Added v0.19#master
@@ -114,12 +114,12 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
 
             longPollServer = await self.get_server()
 
-            self.logger(nf.module_longpoll.format(API_VERSION))
+            await self.logger(nf.module_longpoll.format(API_VERSION))
 
             await self._run(longPollServer)
         else:
 
-            self.logger(nf.longpoll_not_enabled)
+            await self.logger(nf.longpoll_not_enabled)
 
     async def get_server(self) -> dict:
         """

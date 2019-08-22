@@ -98,7 +98,7 @@ class Api(object):
         )
 
     async def request(self, group, method, data: dict = None) -> dict:
-        data = data or {}
+        data = {k: v for k, v in data.items() if v is not None} if data else {}
         return await self.method_object(group, method, data)
 
     async def __call__(self, **kwargs) -> dict:

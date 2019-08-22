@@ -29,9 +29,11 @@ from ...methods import Api
 
 from ..events import Events
 
-from ...utils import Logger
+from ...utils import Logger, sorted_dict_keys
+
 import time
-import random
+
+from ...types import message
 
 
 class UpdatesProcessor(object):
@@ -41,6 +43,7 @@ class UpdatesProcessor(object):
     on: Events
     logger: Logger
     api: Api
+    a: float
 
     async def new_update(self, event: dict):
         """
@@ -56,7 +59,7 @@ class UpdatesProcessor(object):
             if update['type'] == EventTypes.MESSAGE_NEW:
 
                 if obj['peer_id'] < 2e9:
-                    pass
+                    await self.new_message(obj)
 
                 else:
                     pass
@@ -73,3 +76,45 @@ class UpdatesProcessor(object):
 
     async def new_message(self, obj: dict):
 
+        await self.logger(
+            '\x1b[31;1m-> MESSAGE FROM {} TEXT "{}" TIME #'.format(
+                obj['peer_id'],
+                obj['text'].replace('\n', ' / ')
+            ))
+
+        answer = message.Message(**obj)
+        found: bool = False
+
+        for priority in await sorted_dict_keys(self.on.processor_message_regex):
+
+            for key in self.on.processor_message_regex[priority]:
+
+                if key.match(answer.text) is not None:
+                    found = True
+                    try:
+                        # [Feature] Async Use
+                        # Added v0.19#master
+                        await self.on.processor_message_regex[priority][key](
+                            answer,
+                            **key.match(answer.text).groupdict()
+                        )
+                    except TypeError:
+                        await self.logger.error(
+                            'ADD TO {} FUNCTION REQUIRED ARGS'.format(
+                                self.on.processor_message_regex[priority][key].__name__
+                            )
+                        )
+                    finally:
+                        await self.logger(
+                            'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                                self.on.processor_message_regex[priority][key].__name__,
+                                obj['peer_id']
+                            )
+                        )
+                        break
+
+            if found:
+                break
+
+        if not found:
+            await self.on.undefined_message_func(answer)

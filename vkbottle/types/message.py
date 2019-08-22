@@ -27,30 +27,34 @@ VK API MESSAGE TYPES
 """
 
 
+from pydantic import BaseModel
+
+from ..methods import Api
+
+
 class Geo(object):
-    type: str = None
-    coordinates: dict = None
-    place: dict = None
+    type: str
+    coordinates: dict
+    place: dict
 
 
-class MessageObject(object):
-    id: int = None
-    date: int = None
-    peer_id: int = None
-    from_id: int = None
-    text: str = None
-    random_id: int = None
+class Message(BaseModel):
+    id: int
+    date: int
+    peer_id: int
+    from_id: int
+    text: str
+    random_id: int
     ref: str = None
     ref_source: str = None
-    attachments: list = None
-    important: bool = None
+    attachments: list
+    important: bool
     geo = Geo
     payload: str = None
-    fwd_messages: list = None
+    fwd_messages: list
     reply_message: dict = None
+    api: Api
 
-
-class Message(MessageObject):
     def __call__(self, message, attachment: str = None, keyboard: list = None,
                  sticker_id: int = None, chat_id: int = None, user_ids: str = None,
                  lat: float = None, long: float = None, reply_to: int = None,

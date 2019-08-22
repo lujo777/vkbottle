@@ -64,7 +64,15 @@ def make_priority_path(first: dict, priority, compile, second):
     return first
 
 
+async def sorted_dict_keys(dictionary: dict, reverse=True):
+    return sorted(list(dictionary.keys()), reverse=reverse)
+
+
 def _request(func):
+    """
+    aioHTTP Request Decorator Wrapper
+    :param func: wrapped function
+    """
     async def decorator(*args, **kwargs):
         async with ClientSession(json_serialize=json.dumps) as client:
             funced = await func(*args, **kwargs, client=client)
@@ -72,7 +80,6 @@ def _request(func):
     return decorator
 
 
-# NOTE FIXME TODO
 class HTTPRequest(object):
     """
     aioHTTP Request Wrapper
