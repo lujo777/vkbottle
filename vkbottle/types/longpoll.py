@@ -22,32 +22,6 @@
  SOFTWARE.
 """
 
-from vkbottle.portable import VERSION
-from setuptools import setup
 
-setup(
-  name='vkbottle',
-  packages=['vkbottle'],
-  version=VERSION,
-  license='MIT',
-  description='New bot-creating repo with options control like in the famous framework flask!',
-  author='Arseniy Timonik',
-  author_email='timonik.bss@gmail.com',
-  url='https://github.com/timoniq/vkbottle',
-  long_description=open('README.md', encoding='utf-8').read(),
-  long_description_content_type='text/markdown',
-  download_url='https://github.com/timoniq/vkbottle/archive/v' + VERSION + '.tar.gz',
-  keywords=['vk', 'vkontakte', 'vk-api', 'vk-bot', 'vkbottle', 'vk-bottle'],
-  install_requires=[
-    'aiohttp'
-  ],
-  classifiers=[
-    'Development Status :: 3 - Alpha',
-    'Intended Audience :: Developers',
-    'Topic :: Software Development :: Build Tools',
-    'License :: OSI Approved :: MIT License',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7'
-  ],
-)
+class EventTypes:
+    MESSAGE_NEW = 'message_new'

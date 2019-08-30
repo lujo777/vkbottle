@@ -22,32 +22,24 @@
  SOFTWARE.
 """
 
-from vkbottle.portable import VERSION
-from setuptools import setup
 
-setup(
-  name='vkbottle',
-  packages=['vkbottle'],
-  version=VERSION,
-  license='MIT',
-  description='New bot-creating repo with options control like in the famous framework flask!',
-  author='Arseniy Timonik',
-  author_email='timonik.bss@gmail.com',
-  url='https://github.com/timoniq/vkbottle',
-  long_description=open('README.md', encoding='utf-8').read(),
-  long_description_content_type='text/markdown',
-  download_url='https://github.com/timoniq/vkbottle/archive/v' + VERSION + '.tar.gz',
-  keywords=['vk', 'vkontakte', 'vk-api', 'vk-bot', 'vkbottle', 'vk-bottle'],
-  install_requires=[
-    'aiohttp'
-  ],
-  classifiers=[
-    'Development Status :: 3 - Alpha',
-    'Intended Audience :: Developers',
-    'Topic :: Software Development :: Build Tools',
-    'License :: OSI Approved :: MIT License',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7'
-  ],
-)
+class ANSIColor(object):
+    RESET = '\x1b[0m'
+    BLUE = '\x1b[34m'
+    YELLOW = '\x1b[93;1m'
+    RED = '\x1b[31;1m'
+    MAGENTA = '\x1b[35m'
+
+
+colors: dict = {
+    'default': ANSIColor.RESET,
+    'blue': ANSIColor.BLUE,
+    'yellow': ANSIColor.YELLOW,
+    'red': ANSIColor.RED,
+    'magenta': ANSIColor.MAGENTA
+}
+
+
+def colored(tocolor, color: str = 'default'):
+    color = colors.get(color, ANSIColor.RESET)
+    return color + str(tocolor) + ANSIColor.RESET

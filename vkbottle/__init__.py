@@ -1,55 +1,25 @@
-from .utils import Utils
+"""
+ MIT License
 
-from .events import Events
+ Copyright (c) 2019 Arseniy Timonik
 
-from .jsontype import json_type_utils, dumps as json_dumps
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
-from .methods import Api
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
 
-from .keyboard import _keyboard
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+"""
 
-from .vkbottle import RunBot, SynchroAnswer
-
-from .exceptions import *
-
-
-AnswerObject = SynchroAnswer.AnswerObject
-
-__version__ = '0.14'  # Package VKBottle version
-
-__api_version__ = 5.101  # VK Api version
-
-
-# Main Bot Auth
-class Bot:
-    def __init__(self, token: str, group_id: int, debug=False, async_use=False, plugin_folder: str = 'plugins', **deprecated):
-        self.__token = token
-        self.api_version = __api_version__
-        self.version = __version__
-        self.url = 'https://api.vk.com/method/'
-        self.group_id = group_id
-        self.async_use = async_use
-        self.debug = debug
-        self.deprecated = deprecated
-        # Plugins
-        self.plugin_folder = plugin_folder
-        # Api Usage
-        self.api = Api(token, self.url, self.api_version)
-        # Events
-        self.on = Events()
-
-    def run(self, wait=25):
-        run_bot = RunBot(self, self.__token, self.async_use)
-        run_bot.run(wait)
-
-
-# Main User Auth
-class User:
-    def __init__(self, token, user_id, debug=False):
-        self.__token = token
-        self.api_version = __api_version__
-        self.url = 'https://api.vk.com/method/'
-        self.user_id = user_id
-        self.debug = debug
-        # Api Usage
-        self.api = Api(token, self.url, self.api_version, user=True)
+from .bot import *
