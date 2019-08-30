@@ -33,7 +33,7 @@ from ...utils import Logger, sorted_dict_keys
 
 import time
 
-from ...types import message, event
+from ...types import types
 
 from ...collections import colored
 
@@ -88,7 +88,7 @@ class UpdatesProcessor(object):
             )
         )
 
-        answer = message.Message(**obj, api=[self.api])
+        answer = types.Message(**obj, api=[self.api])
         found: bool = False
 
         for priority in await sorted_dict_keys(self.on.processor_message_regex):
@@ -135,12 +135,14 @@ class UpdatesProcessor(object):
                 'red'
             ))
 
-        answer = message.Message(**obj, api=[self.api])
+        answer = types.Message(**obj, api=[self.api])
         found: bool = False
 
         for priority in await sorted_dict_keys(self.on.processor_message_chat_regex):
 
             for key in self.on.processor_message_chat_regex[priority]:
+
+                print(key)
 
                 if key.match(answer.text) is not None:
                     found = True
@@ -168,5 +170,4 @@ class UpdatesProcessor(object):
         :param event_type: VK Server Event Type
         :param obj: VK Server Event Object
         """
-        answer = event.Event(event_type=event_type, obj=obj)
-        print(answer.f.__dir__())
+        pass

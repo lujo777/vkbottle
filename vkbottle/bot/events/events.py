@@ -31,7 +31,7 @@ import re
 def regex_message(text):
     escape = {ord(x): ('\\' + x) for x in r'\.*+?()[]|^$'}
     pattern = re.sub(r'(<.*?>)',  r'(?P\1.*)', text.translate(escape))
-    return re.compile(pattern)
+    return re.compile(pattern + '\\b')
 
 
 class OnMessage(object):

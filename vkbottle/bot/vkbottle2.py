@@ -87,7 +87,7 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         todo RU -  сделать нормальную функцию проверки версии
         """
 
-        current_portable = await self.get_current_portable()
+        current_portable = {'version': '0.14'} # await self.get_current_portable()
         """
         Check newest version of VKBottle and alarm if newer version is available
         """
@@ -142,6 +142,7 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         return await self.request.post(url)
 
     async def _run(self, longPollServer: dict):
+        print(self.on.processor_message_chat_regex)
         while True:
             try:
                 event = await self.make_long_request(longPollServer)
