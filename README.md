@@ -3,8 +3,6 @@
 [![VK Chat](https://img.shields.io/badge/Vk-Chat-blue)](https://vk.me/join/AJQ1d7fBUBM_800lhEe_AwJj) 
 [![Build Status](https://travis-ci.com/timoniq/vkbottle.svg?branch=master)](https://travis-ci.com/timoniq/vkbottle)
 
-Comfortable, easy, fast wrapper and toolkit for powerful work with VK API
-
 ### Install
 
 From GitHub:

@@ -23,9 +23,8 @@
 """
 
 from vkbottle.portable import VERSION
-import setuptools
+from setuptools import setup
 
-from distutils.core import setup
 setup(
   name='vkbottle',
   packages=['vkbottle'],
