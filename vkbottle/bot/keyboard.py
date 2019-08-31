@@ -23,10 +23,6 @@
 """
 
 from vkbottle.vkbottle.jsontype import dumps
-from enum import Enum
-from ..vk.exceptions import *
-import six
-from ..utils import Logger
 
 
 def keyboard_generator(pattern, one_time=False):

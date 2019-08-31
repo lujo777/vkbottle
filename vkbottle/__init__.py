@@ -23,3 +23,4 @@
 """
 
 from .bot import *
+from .bot.keyboard import keyboard_generator

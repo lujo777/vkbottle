@@ -37,6 +37,8 @@ from ...types import types
 
 from ...collections import colored
 
+from ..patcher import Patcher
+
 
 class UpdatesProcessor(object):
     """
@@ -46,6 +48,7 @@ class UpdatesProcessor(object):
     logger: Logger
     api: Api
     a: float
+    patcher: Patcher
 
     async def new_update(self, event: dict):
         """
@@ -57,18 +60,22 @@ class UpdatesProcessor(object):
 
             obj = update['object']
 
-            if update['type'] == EventTypes.MESSAGE_NEW:
+            print(await self.patcher.check_for_whitelist(obj))
 
-                if obj['peer_id'] < 2e9:
-                    await self.new_message(obj)
+            if await self.patcher.check_for_whitelist(obj):
+
+                if update['type'] == EventTypes.MESSAGE_NEW:
+
+                    if obj['peer_id'] < 2e9:
+                        await self.new_message(obj)
+
+                    else:
+                        await self.new_chat_message(obj)
 
                 else:
-                    await self.new_chat_message(obj)
-
-            else:
-                # If this is an event of the group
-                print('receive event')
-                pass
+                    # If this is an event of the group
+                    print('receive event')
+                    pass
 
         await self.logger('Timing:', round(time.time() - self.a, 5))
 

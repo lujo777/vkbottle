@@ -33,6 +33,8 @@ from .. import notifications as nf
 from .events import Events, processor
 from aiohttp import ClientSession, ClientConnectionError, ClientTimeout
 import asyncio
+from .patcher import Patcher
+from multiprocessing import Pool
 
 import time
 
@@ -65,6 +67,8 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         self.on: Events = Events(use_regex=use_regex)
         self._method: Method = Method(token)
         self.api: Api = Api(self._method)
+
+        self.patcher = Patcher(logger=self.logger)
 
         # [Support] Plugin Support
         # Added v0.20#master
@@ -115,6 +119,10 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
             longPollServer = await self.get_server()
 
             await self.logger(nf.module_longpoll.format(API_VERSION))
+
+            # pool = Pool(processes=1)
+
+            # pool.apply_async(self._run, [longPollServer])
 
             await self._run(longPollServer)
         else:
