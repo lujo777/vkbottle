@@ -59,7 +59,14 @@ def load_plugins_by_file(path, logger: Logger):
     return plugins
 
 
-def load_plugins(folder, logger: Logger):
+def checkup_plugins(folder):
+    folder = folder or 'beautiful_bot_folder'
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    return folder
+
+
+async def load_plugins(folder, logger: Logger):
     plugins_list = []
 
     if folder is not None:
@@ -69,7 +76,7 @@ def load_plugins(folder, logger: Logger):
         if len(os.listdir(folder)) > 0:
 
             # [Feature] Progress Bar
-            logger.progress_bar(0, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
+            await logger.progress_bar(0, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
                                suffix='Complete', length=50)
 
             for i, name in enumerate(os.listdir(folder)):
@@ -85,10 +92,10 @@ def load_plugins(folder, logger: Logger):
                 time.sleep(0.05)
 
                 # Update Progress Bar
-                logger.progress_bar(i + 1, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
+                await logger.progress_bar(i + 1, len(os.listdir(folder)), prefix='Downloading your plugins from "{}/":'.format(folder),
                                    suffix='Complete', length=50)
 
-        logger('Found {} Plugins in \x1b[93;1m{}\x1b[0m{}'.format(
+        await logger('Found {} Plugins in \x1b[93;1m{}\x1b[0m{}'.format(
             len(plugins_list),
             os.path.dirname(path),
             ':' if len(plugins_list) > 0 else ''),

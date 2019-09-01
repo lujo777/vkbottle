@@ -34,7 +34,6 @@ from .events import Events, processor
 from aiohttp import ClientSession, ClientConnectionError, ClientTimeout
 import asyncio
 from .patcher import Patcher
-from multiprocessing import Pool
 
 import time
 
@@ -63,16 +62,13 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
 
         self.session = ClientSession
         self._loop = asyncio.get_event_loop
+        self.plugin_folder = path_loader.checkup_plugins(folder=plugin_folder)
 
         self.on: Events = Events(use_regex=use_regex)
         self._method: Method = Method(token)
         self.api: Api = Api(self._method)
 
-        self.patcher = Patcher(logger=self.logger)
-
-        # [Support] Plugin Support
-        # Added v0.20#master
-        self._plugins = path_loader.load_plugins(plugin_folder, self.logger)
+        self.patcher = Patcher(logger=self.logger, plugin_folder=self.plugin_folder)
 
     def run(self, wait: int = 25):
         """
@@ -91,6 +87,9 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         LongPoll Bot runner
         todo RU -  сделать нормальную функцию проверки версии
         """
+        # [Support] Plugin Support
+        # Added v0.20#master
+        self._plugins = path_loader.load_plugins(folder=self.plugin_folder, logger=self.logger)
 
         current_portable = {'version': '0.14'}  # await self.get_current_portable()
         """
@@ -119,10 +118,6 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
             longPollServer = await self.get_server()
 
             await self.logger(nf.module_longpoll.format(API_VERSION))
-
-            # pool = Pool(processes=1)
-
-            # pool.apply_async(self._run, [longPollServer])
 
             await self._run(longPollServer)
         else:
@@ -154,7 +149,6 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         while True:
             try:
                 event = await self.make_long_request(longPollServer)
-                print(event)
                 self.a = time.time()
                 await self.new_update(event)
                 longPollServer = await self.get_server()
