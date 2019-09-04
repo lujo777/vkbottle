@@ -28,10 +28,10 @@ from ...utils import make_priority_path
 import re
 
 
-def regex_message(text):
-    escape = {ord(x): ('\\' + x) for x in r'\.*+?()[]|^$'}
+def regex_message(text, formatted_pattern='{}'):
+    escape = {ord(x): '\\' + x for x in r'\.*+?()[]|^$'}
     pattern = re.sub(r'(<.*?>)',  r'(?P\1.*)', text.translate(escape))
-    return re.compile(pattern + '\\b')
+    return re.compile(formatted_pattern.format(pattern))
 
 
 class OnMessage(object):
@@ -67,17 +67,11 @@ class OnMessage(object):
         """
         def decorator(func):
 
-            pattern = re.sub(
-                r'(<.*?>)',
-                r'(?P\1.*)',
-                text.translate(
-                    {ord(x): ('\\' + x) for x in r'\.*+?()[]|^$'}
-                )
-            ) + r'.*?'
+            pattern = regex_message(text, formatted_pattern='{}.*?')
 
             self.processor = make_priority_path(
                   self.processor,
-                  *[priority, re.compile(pattern)],
+                  *[priority, pattern],
                   func
             )
 
@@ -130,10 +124,9 @@ class OnMessageChat(object):
         :param priority: priority of checkup processor
         """
         def decorator(func):
-            escape = {ord(x): ('\\' + x) for x in r'\.*+?()[]|^$'}
-            pattern = re.sub(r'(<.*?>)', r'(?P\1.*)', text.translate(escape)) + r'.*?'
+            pattern = regex_message(text, formatted_pattern='{}.*?')
             self.processor = make_priority_path(self.processor,
-                                                *[priority, re.compile(pattern)],
+                                                *[priority, pattern],
                                                 func)
             return func
         return decorator
@@ -187,13 +180,13 @@ class OnMessageBoth(object):
         :param priority: priority of checkup processor
         """
         def decorator(func):
-            escape = {ord(x): ('\\' + x) for x in r'\.*+?()[]|^$'}
-            pattern = re.sub(r'(<.*?>)', r'(?P\1.*)', text.translate(escape)) + r'.*?'
+            pattern = regex_message(text, formatted_pattern='{}.*?')
+
             self.processor_message = make_priority_path(self.processor_message,
-                                                        *[priority, re.compile(pattern)],
+                                                        *[priority, pattern],
                                                         func)
             self.processor_chat = make_priority_path(self.processor_chat,
-                                                     *[priority, re.compile(pattern)],
+                                                     *[priority, pattern],
                                                      func)
             return func
         return decorator

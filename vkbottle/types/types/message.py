@@ -44,6 +44,8 @@ class Message(BaseModel):
     from_id: int = None
     text: str = None
     random_id: int = None
+    ref: str = None
+    ref_source: str = None
     attachments: typing.List[Attachment] = None
     important: bool = None
     geo: Geo = None
@@ -51,6 +53,7 @@ class Message(BaseModel):
     action: MessageAction = None
     fwd_messages: typing.List["Message"] = []
     reply_message: "Message" = None
+    conversation_message_id: int = None
     api: list = None
 
     async def reply(self, message: str = '&#8230;', attachment: str = None, keyboard: dict = None, **params):

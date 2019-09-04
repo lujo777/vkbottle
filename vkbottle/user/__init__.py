@@ -26,8 +26,6 @@
 USER MAIN API WRAPPER
 """
 
-from ..portable import API_VERSION
-
 from ..methods import Api
 
 
@@ -44,4 +42,4 @@ class User:
         self.debug = debug
 
         # Api Usage
-        self.api = Api(token, self.url, API_VERSION, user=True)
+        self.api = Api(token, self.url)

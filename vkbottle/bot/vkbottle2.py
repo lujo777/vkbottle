@@ -64,7 +64,7 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         self._loop = asyncio.get_event_loop
         self.plugin_folder = path_loader.checkup_plugins(folder=plugin_folder)
 
-        self.on: Events = Events(use_regex=use_regex)
+        self.on: Events = Events(use_regex=use_regex, group_id=self.group_id)
         self._method: Method = Method(token)
         self.api: Api = Api(self._method)
 
@@ -150,6 +150,7 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
             try:
                 event = await self.make_long_request(longPollServer)
                 self.a = time.time()
+                print(event)
                 await self.new_update(event)
                 longPollServer = await self.get_server()
 

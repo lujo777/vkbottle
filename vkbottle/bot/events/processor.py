@@ -68,7 +68,10 @@ class UpdatesProcessor(object):
                         await self.new_message(obj)
 
                     else:
-                        await self.new_chat_message(obj)
+                        if not 'action' in obj:
+                            await self.new_chat_message(obj)
+                        else:
+                            await self.new_chat_action(obj)
 
                 else:
                     # If this is an event of the group
@@ -111,10 +114,10 @@ class UpdatesProcessor(object):
                         'New message compiled with decorator <' +
                         colored(self.on.processor_message_regex[priority][key].__name__, 'magenta') +
                         '> (from: {})'.format(
-                            obj['peer_id']
-                        )
+                            answer.from_id
+                        ),
+                        '>>', round(time.time() - self.a, 5)
                     )
-                    await self.logger('\rTiming:', round(time.time() - self.a, 5))
 
                     break
 
@@ -158,7 +161,7 @@ class UpdatesProcessor(object):
                     await self.logger(
                         'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
                             self.on.processor_message_chat_regex[priority][key].__name__,
-                            obj['peer_id']
+                            answer.from_id
                         ),
                         '>>', round(time.time() - self.a, 5)
                     )
@@ -175,3 +178,33 @@ class UpdatesProcessor(object):
         :param obj: VK Server Event Object
         """
         pass
+
+    async def new_chat_action(self, obj: dict):
+        """
+        Chat Action Processor
+        :param obj:
+        :return: VK Server Event Object
+        """
+        action = obj['action']
+
+        await self.logger(
+            colored(
+                '-> ACTION FROM CHAT {} TYPE "{}" TIME #'.format(
+                    obj['peer_id'],
+                    action['type']
+                ),
+                'red'
+            ))
+
+        if action['type'] in self.on.chat_action_types:
+            if {**action, **self.on.chat_action_types[action['type']]['rules']} == action:
+                answer = types.Message(**obj, api=[self.api])
+                await self.on.chat_action_types[action['type']]['call'](answer)
+
+                await self.logger(
+                    'New action compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                        self.on.chat_action_types[action['type']]['call'].__name__,
+                        answer.from_id
+                    ),
+                    '>>', round(time.time() - self.a, 5)
+                )

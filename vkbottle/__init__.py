@@ -24,3 +24,4 @@
 
 from .bot import *
 from .bot.keyboard import keyboard_generator
+from .vk.exceptions import *
