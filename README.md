@@ -35,8 +35,8 @@ bot = Bot('my-token', 123, debug=True)
 
 
 @bot.on.message('My name is <name>')
-def wrapper(message: Message, name):
-    message('Hello, {}'.format(name))
+async def wrapper(ans: Message, name):
+    await ans('Hello, {}'.format(name))
    
    
 if __name__ == '__main__':
