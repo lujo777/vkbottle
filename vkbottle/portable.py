@@ -26,7 +26,7 @@
 PORTABLE CONSTANTS FILE
 """
 
-__version__ = '0.14'  # Package VKBottle version
+__version__ = '0.15'  # Package VKBottle version
 
 __author__ = 'Arseniy Timonik'
 
