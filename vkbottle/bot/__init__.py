@@ -30,7 +30,7 @@ from .vkbottle2 import LongPollBot
 
 from ..portable import API_VERSION
 
-from ..types.types.message import Message
+from ..vktypes.types.message import Message
 
 from ..methods import Api
 

@@ -23,7 +23,7 @@
 """
 
 
-from ...types.longpoll import EventTypes
+from ...vktypes.longpoll import EventTypes
 
 from ...methods import Api
 
@@ -33,7 +33,7 @@ from ...utils import Logger, sorted_dict_keys
 
 import time
 
-from ...types import types
+from ...vktypes import types
 
 from ...collections import colored
 
