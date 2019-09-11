@@ -23,7 +23,7 @@
 """
 
 
-from ...vktypes.longpoll import EventTypes
+from vkbottle.vktypes.longpoll import EventTypes
 
 from ...methods import Api
 
