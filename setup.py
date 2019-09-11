@@ -21,7 +21,11 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 """
-from vkbottle.portable import __version__
+try:
+    from vkbottle.portable import __version__
+except Exception as e:
+    print(e)
+    __version__ = "0.14"
 from setuptools import setup, find_packages
 
 setup(
