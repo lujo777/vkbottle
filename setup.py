@@ -30,7 +30,7 @@ from setuptools import setup, find_packages
 
 setup(
   name='vkbottle',
-  packages=find_packages(),
+  packages=find_packages().append('types'),
   version=__version__,
   license='MIT',
   description='New bot-creating repo with options control like in the famous framework flask!',
