@@ -23,11 +23,11 @@
 """
 
 from vkbottle.portable import VERSION
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
   name='vkbottle',
-  packages=['vkbottle'],
+  packages=find_packages(),
   version=VERSION,
   license='MIT',
   description='New bot-creating repo with options control like in the famous framework flask!',
@@ -36,7 +36,6 @@ setup(
   url='https://github.com/timoniq/vkbottle',
   long_description=open('README.md', encoding='utf-8').read(),
   long_description_content_type='text/markdown',
-  download_url='https://github.com/timoniq/vkbottle/archive/v' + VERSION + '.tar.gz',
   keywords=['vk', 'vkontakte', 'vk-api', 'vk-bot', 'vkbottle', 'vk-bottle'],
   install_requires=[
     'aiohttp'
