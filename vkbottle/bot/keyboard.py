@@ -22,7 +22,7 @@
  SOFTWARE.
 """
 
-from vkbottle.vkbottle.jsontype import dumps
+from ..jsontype import dumps
 from enum import Enum
 from ..vk.exceptions import *
 import six
