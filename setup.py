@@ -21,14 +21,16 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 """
-
-from vkbottle.portable import VERSION
+try:
+    from vkbottle.portable import __version__
+except ImportError:
+    from .vkbottle.portable import __version__
 from setuptools import setup, find_packages
 
 setup(
   name='vkbottle',
   packages=find_packages(),
-  version=VERSION,
+  version=__version__,
   license='MIT',
   description='New bot-creating repo with options control like in the famous framework flask!',
   author='Arseniy Timonik',
