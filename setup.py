@@ -21,10 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 """
-try:
-    from vkbottle.portable import __version__
-except ImportError:
-    from .vkbottle.portable import __version__
+from vkbottle.portable import __version__
 from setuptools import setup, find_packages
 
 setup(
