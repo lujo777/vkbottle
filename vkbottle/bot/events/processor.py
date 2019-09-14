@@ -35,7 +35,7 @@ import time
 
 from ...vktypes import types
 
-from ...collections import colored
+from ...project_collections import colored
 
 
 class UpdatesProcessor(object):

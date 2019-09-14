@@ -30,7 +30,7 @@ from setuptools import setup, find_packages
 
 setup(
   name='vkbottle',
-  packages=['vkbottle'],
+  packages=find_packages(),
   version=__version__,
   license='MIT',
   description='New bot-creating repo with options control like in the famous framework flask!',
@@ -41,7 +41,8 @@ setup(
   long_description_content_type='text/markdown',
   keywords=['vk', 'vkontakte', 'vk-api', 'vk-bot', 'vkbottle', 'vk-bottle'],
   install_requires=[
-    'aiohttp'
+    'aiohttp',
+    'pydantic'
   ],
   classifiers=[
     'Development Status :: 3 - Alpha',

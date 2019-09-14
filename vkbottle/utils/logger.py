@@ -28,7 +28,7 @@ FILE WITH LOGGERS AND LOG-FEATURES
 
 import re
 import time
-from ..collections import colored, ANSIColor
+from ..project_collections import colored, ANSIColor
 
 
 class Logger:

@@ -23,7 +23,7 @@
 """
 
 
-from .collections import colored
+from .project_collections import colored
 
 
 plugin_folder = 'Plugin Folder was created, PATH "{}"'
