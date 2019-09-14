@@ -58,7 +58,6 @@ class Message(BaseModel):
                                          dict(
                                              message=message,peer_id=self.peer_id,
                                              attachment=attachment,
-                                             reply_to=self.id,
                                              keyboard=keyboard if not keyboard else keyboard_generator(keyboard),
                                              random_id=random.randint(-2e9, 2e9),
                                              **params
