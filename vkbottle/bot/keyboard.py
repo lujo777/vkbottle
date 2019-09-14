@@ -23,9 +23,7 @@
 """
 
 from ..jsontype import dumps
-from enum import Enum
 from ..vk.exceptions import *
-import six
 from ..utils import Logger
 
 
