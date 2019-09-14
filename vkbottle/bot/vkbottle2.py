@@ -142,11 +142,9 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         return await self.request.post(url)
 
     async def _run(self, longPollServer: dict):
-        print(self.on.processor_message_chat_regex)
         while True:
             try:
                 event = await self.make_long_request(longPollServer)
-                print(event)
                 self.a = time.time()
                 await self.new_update(event)
                 longPollServer = await self.get_server()
