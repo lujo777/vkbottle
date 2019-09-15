@@ -33,6 +33,7 @@ from .. import notifications as nf
 from .events import Events, processor
 from aiohttp import ClientSession, ClientConnectionError, ClientTimeout
 import asyncio
+from .patcher import Patcher
 
 import time
 
@@ -45,7 +46,8 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
     """
     wait: int
 
-    def __init__(self, token: str, group_id: int, plugin_folder: str = None, debug: bool = False, use_regex: bool = True):
+    def __init__(self, token: str, group_id: int, plugin_folder: str = None,
+                 debug: bool = False, use_regex: bool = True):
         """
         Bot Main Auth
         :param token: VK Api Token
@@ -60,14 +62,13 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
 
         self.session = ClientSession
         self._loop = asyncio.get_event_loop
+        self.plugin_folder = path_loader.checkup_plugins(folder=plugin_folder)
 
-        self.on: Events = Events(use_regex=use_regex)
+        self.on: Events = Events(use_regex=use_regex, group_id=self.group_id)
         self._method: Method = Method(token)
         self.api: Api = Api(self._method)
 
-        # [Support] Plugin Support
-        # Added v0.20#master
-        self._plugins = path_loader.load_plugins(plugin_folder, self.logger)
+        self.patcher = Patcher(logger=self.logger, plugin_folder=self.plugin_folder)
 
     def run(self, wait: int = 25):
         """
@@ -86,8 +87,11 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         LongPoll Bot runner
         todo RU -  сделать нормальную функцию проверки версии
         """
+        # [Support] Plugin Support
+        # Added v0.20#master
+        self._plugins = path_loader.load_plugins(folder=self.plugin_folder, logger=self.logger)
 
-        current_portable = {'version': '0.14'} # await self.get_current_portable()
+        current_portable = {'version': '0.14'}  # await self.get_current_portable()
         """
         Check newest version of VKBottle and alarm if newer version is available
         """
@@ -146,6 +150,7 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
             try:
                 event = await self.make_long_request(longPollServer)
                 self.a = time.time()
+                print(event)
                 await self.new_update(event)
                 longPollServer = await self.get_server()
 

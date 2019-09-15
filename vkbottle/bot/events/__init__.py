@@ -32,9 +32,11 @@ from ...notifications import add_undefined
 
 from .events import OnMessage, OnMessageChat, OnMessageBoth
 
+import re
+
 
 class Events:
-    def __init__(self, logger: Logger = Logger(True), use_regex: bool = True):
+    def __init__(self, group_id: int, logger: Logger = Logger(True), use_regex: bool = True):
         """
         Make decorator processors (dictionaries with functions)
         :param logger: Logging object
@@ -43,6 +45,8 @@ class Events:
         """
         # Collections
         self.use_regex = use_regex
+
+        self.group_id = group_id
 
         # Processors
         self.processor_message_regex = {}
@@ -71,13 +75,14 @@ class Events:
         self.processor_message_regex = dict_of_dicts_merge(self.message.processor, self.message_both.processor_message)
         self.processor_message_chat_regex = dict_of_dicts_merge(self.message_chat.processor, self.message_both.processor_chat)
 
-    def chat_action(self, type_: str):
+    def chat_action(self, type_: str, rules: dict):
         """
         Special express processor of chat actions (https://vk.com/dev/objects/message - action object)
         :param type_: action name
+        :param rules:
         """
         def decorator(func):
-            self.chat_action_types[type_] = {'call': func}
+            self.chat_action_types[type_] = {'call': func, 'rules': rules}
             return func
         return decorator
 
@@ -87,6 +92,19 @@ class Events:
         """
         def decorator(func):
             self.undefined_message_func = func
+            return func
+        return decorator
+
+    def chat_mention(self):
+        def decorator(func):
+            pattern = re.compile(r'\[(club|public)' + str(self.group_id) + r'\|.*?]')
+            self.processor_message_chat_regex[0][pattern] = func
+            return func
+        return decorator
+
+    def chat_invite(self):
+        def decorator(func):
+            self.chat_action_types['chat_invite_user'] = {'call': func, 'rules': {'member_id': self.group_id * -1}}
             return func
         return decorator
 

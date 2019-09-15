@@ -102,11 +102,3 @@ class HTTPRequest(object):
 class HTTP(object):
     request = HTTPRequest()
 
-    async def get_current_portable(self):
-        """
-        Get current actual info about package from GitHub page
-        todo RU - перевести мониторинг на свой домен
-        """
-        portable = await self.request.get(url=VERSION_PORTABLE, content_type='text/plain')
-        return portable
-
