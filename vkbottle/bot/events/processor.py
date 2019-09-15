@@ -37,6 +37,8 @@ from ...vktypes import types
 
 from ...project_collections import colored
 
+from ..patcher import Patcher
+
 
 class UpdatesProcessor(object):
     """
@@ -46,6 +48,7 @@ class UpdatesProcessor(object):
     logger: Logger
     api: Api
     a: float
+    patcher: Patcher
 
     async def new_update(self, event: dict):
         """
@@ -57,20 +60,23 @@ class UpdatesProcessor(object):
 
             obj = update['object']
 
-            if update['type'] == EventTypes.MESSAGE_NEW:
+            if await self.patcher.check_for_whitelist(obj):
 
-                if obj['peer_id'] < 2e9:
-                    await self.new_message(obj)
+                if update['type'] == EventTypes.MESSAGE_NEW:
+
+                    if obj['peer_id'] < 2e9:
+                        await self.new_message(obj)
+
+                    else:
+                        if not 'action' in obj:
+                            await self.new_chat_message(obj)
+                        else:
+                            await self.new_chat_action(obj)
 
                 else:
-                    await self.new_chat_message(obj)
-
-            else:
-                # If this is an event of the group
-                print('receive event')
-                pass
-
-        await self.logger('Timing:', round(time.time() - self.a, 5))
+                    # If this is an event of the group
+                    print('receive event')
+                    pass
 
     async def new_message(self, obj: dict):
         """
@@ -108,8 +114,9 @@ class UpdatesProcessor(object):
                         'New message compiled with decorator <' +
                         colored(self.on.processor_message_regex[priority][key].__name__, 'magenta') +
                         '> (from: {})'.format(
-                            obj['peer_id']
-                        )
+                            answer.from_id
+                        ),
+                        '>>', round(time.time() - self.a, 5)
                     )
 
                     break
@@ -142,8 +149,6 @@ class UpdatesProcessor(object):
 
             for key in self.on.processor_message_chat_regex[priority]:
 
-                print(key)
-
                 if key.match(answer.text) is not None:
                     found = True
                     # [Feature] Async Use
@@ -156,9 +161,11 @@ class UpdatesProcessor(object):
                     await self.logger(
                         'New message compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
                             self.on.processor_message_chat_regex[priority][key].__name__,
-                            obj['peer_id']
-                        )
+                            answer.from_id
+                        ),
+                        '>>', round(time.time() - self.a, 5)
                     )
+
                     break
 
             if found:
@@ -171,3 +178,33 @@ class UpdatesProcessor(object):
         :param obj: VK Server Event Object
         """
         pass
+
+    async def new_chat_action(self, obj: dict):
+        """
+        Chat Action Processor
+        :param obj:
+        :return: VK Server Event Object
+        """
+        action = obj['action']
+
+        await self.logger(
+            colored(
+                '-> ACTION FROM CHAT {} TYPE "{}" TIME #'.format(
+                    obj['peer_id'],
+                    action['type']
+                ),
+                'red'
+            ))
+
+        if action['type'] in self.on.chat_action_types:
+            if {**action, **self.on.chat_action_types[action['type']]['rules']} == action:
+                answer = types.Message(**obj, api=[self.api])
+                await self.on.chat_action_types[action['type']]['call'](answer)
+
+                await self.logger(
+                    'New action compiled with decorator <\x1b[35m{}\x1b[0m> (from: {})'.format(
+                        self.on.chat_action_types[action['type']]['call'].__name__,
+                        answer.from_id
+                    ),
+                    '>>', round(time.time() - self.a, 5)
+                )
