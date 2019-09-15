@@ -1,5 +1,5 @@
 from ..utils import Logger
-from ..collections import colored
+from ..project_collections import colored
 import os
 
 
