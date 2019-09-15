@@ -22,7 +22,9 @@
  SOFTWARE.
 """
 
-from vkbottle.vkbottle.jsontype import dumps
+from ..jsontype import dumps
+from ..vk.exceptions import *
+from ..utils import Logger
 
 
 def keyboard_generator(pattern, one_time=False):
