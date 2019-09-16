@@ -56,10 +56,11 @@ class Message(BaseModel):
     async def reply(self, message: str = '&#8230;', attachment: str = None, keyboard: dict = None, **params):
         return await self.api[0].request('messages', 'send',
                                          dict(
-                                             message=message,peer_id=self.peer_id,
+                                             message=message,
+                                             peer_id=self.peer_id,
                                              attachment=attachment,
                                              reply_to=self.id,
-                                             keyboard=keyboard if not keyboard else keyboard_generator(keyboard),
+                                             keyboard=keyboard,
                                              random_id=random.randint(-2e9, 2e9),
                                              **params
                                          )
@@ -70,7 +71,7 @@ class Message(BaseModel):
                                          dict(
                                              message=message, peer_id=self.peer_id,
                                              attachment=attachment,
-                                             keyboard=keyboard if not keyboard else keyboard_generator(keyboard),
+                                             keyboard=keyboard,
                                              random_id=random.randint(-2e9, 2e9),
                                              **params
                                          )
