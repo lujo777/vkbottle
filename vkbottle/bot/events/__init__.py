@@ -98,7 +98,7 @@ class Events:
     def chat_mention(self):
         def decorator(func):
             pattern = re.compile(r'\[(club|public)' + str(self.group_id) + r'\|.*?]')
-            self.processor_message_chat_regex[0][pattern] = func
+            self.processor_message_chat_regex = make_priority_path(self.processor_message_chat_regex, 0, pattern, func)
             return func
         return decorator
 

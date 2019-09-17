@@ -89,7 +89,7 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
         """
         # [Support] Plugin Support
         # Added v0.20#master
-        self._plugins = path_loader.load_plugins(folder=self.plugin_folder, logger=self.logger)
+        # self._plugins = await path_loader.load_plugins(folder=self.plugin_folder, logger=self.logger)
 
         current_portable = {'version': '0.14'}  # await self.get_current_portable()
         """
@@ -150,7 +150,6 @@ class LongPollBot(HTTP, processor.UpdatesProcessor):
             try:
                 event = await self.make_long_request(longPollServer)
                 self.a = time.time()
-                print(event)
                 await self.new_update(event)
                 longPollServer = await self.get_server()
 

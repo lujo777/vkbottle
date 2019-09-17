@@ -177,7 +177,14 @@ class UpdatesProcessor(object):
         :param event_type: VK Server Event Type
         :param obj: VK Server Event Object
         """
-        pass
+        await self.logger(
+            colored(
+                '-> EVENT FROM {} TYPE "{}" TIME #'.format(
+                    obj['user_id'],
+                    event_type.upper()
+                ),
+                'red'
+            ))
 
     async def new_chat_action(self, obj: dict):
         """

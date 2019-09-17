@@ -1,7 +1,5 @@
 from ..base import BaseModel
 
-# https://vk.com/dev/objects/note
-
 
 class Note(BaseModel):
     id: int = None

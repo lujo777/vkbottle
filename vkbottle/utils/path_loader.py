@@ -83,7 +83,7 @@ async def load_plugins(folder, logger: Logger):
                 path = os.path.join(folder, name)
 
                 if os.path.isdir(path):
-                    plugins_list += load_plugins(path, logger)
+                    plugins_list += await load_plugins(path, logger)
 
                 elif re.match(r"^[^_].*\.py$", name):
                     plugins_list += load_plugins_by_file(path, logger)
